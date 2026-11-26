@@ -2,6 +2,7 @@
 #include "core/metrics_parse.h"
 #include "core/settings.h"
 #include "core/version.h"
+#include "ui/reading_style.h"
 #include "ui/theme.h"
 
 #include <QCoreApplication>
@@ -90,6 +91,29 @@ void testIdentity()
     CHECK(tmog::productName() == QStringLiteral("Task Manager OG by Don PELY"));
     CHECK(!tmog::version().isEmpty());
     CHECK(tmog::versionLine().startsWith(tmog::productName()));
+}
+
+void testReadingStates()
+{
+    using tmog::Availability;
+    using tmog::Reading;
+
+    CHECK(tmog::ui::readingStateText(Reading::available(42.0)) == QStringLiteral("LIVE"));
+    CHECK(tmog::ui::readingStateText(Reading::pending(QStringLiteral("first delta")))
+          == QStringLiteral("SAMPLING"));
+    CHECK(tmog::ui::readingStateText(Reading::unavailable(QStringLiteral("no sensor")))
+          == QStringLiteral("UNAVAILABLE"));
+    CHECK(tmog::ui::readingStateText(Reading::denied(QStringLiteral("no permission")))
+          == QStringLiteral("DENIED"));
+
+    const Reading pending = Reading::pending(QStringLiteral("first delta"));
+    const Reading available = Reading::available(12.0);
+    CHECK(tmog::ui::combineReadings(pending, available).state == Availability::Pending);
+    CHECK(tmog::ui::combineReadings(available, pending).state == Availability::Pending);
+    CHECK(tmog::ui::combineReadings(Reading::unavailable(QStringLiteral("failed")), pending).state
+          == Availability::Unavailable);
+    CHECK(tmog::ui::combineReadings(available, Reading::denied(QStringLiteral("denied"))).state
+          == Availability::Denied);
 }
 
 void testMetricsMath()
@@ -218,6 +242,7 @@ int main(int argc, char **argv)
 
     testThemes();
     testIdentity();
+    testReadingStates();
     testMetricsMath();
     testProcParsers();
     testLiveSampler();
