@@ -105,5 +105,6 @@ if ($LASTEXITCODE -ne 0) { throw "WiX light failed" }
 
 Sign-File (Join-Path $dist "TaskManagerOG-$version-windows-x64-setup.exe")
 Sign-File $msi
+Get-ChildItem $dist -Filter "*.wixpdb" | Remove-Item -Force
 
 Get-ChildItem $dist | Select-Object Name, Length
