@@ -1,0 +1,73 @@
+# Build output
+/build/
+/out/
+/dist/
+/artifacts/
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+CTestTestfile.cmake
+compile_commands.json
+*.o
+*.obj
+*.pdb
+*.ilk
+*.exp
+*.lib
+*.a
+*.so
+*.dylib
+*.dll
+*.exe
+
+# Project-local toolchains and caches
+/.tools/
+/.cache/
+/vcpkg_installed/
+/conan/
+
+# Qt
+*.qmlc
+*.jsc
+.qmake.stash
+moc_*.cpp
+ui_*.h
+qrc_*.cpp
+*.qm
+
+# macOS
+.DS_Store
+*.dmg
+*.app/
+
+# Windows
+Thumbs.db
+Desktop.ini
+*.msi
+*.msix
+*.nupkg
+
+# Linux packaging
+*.AppImage
+*.deb
+*.rpm
+*.flatpak
+*.snap
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Local secrets and signing material
+.env
+.env.*
+!.env.example
+*.p12
+*.pfx
+*.pem
+*.key
+*.cer
+signing/

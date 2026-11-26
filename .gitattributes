@@ -1,0 +1,15 @@
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.ico binary
+*.icns binary
+*.dmg binary
+*.exe binary
+*.dll binary
+*.lib binary
+*.zip binary
+*.AppImage binary
+*.deb binary
