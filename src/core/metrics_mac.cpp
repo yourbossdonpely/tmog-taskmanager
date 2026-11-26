@@ -39,7 +39,7 @@ void readProcessPressure(MetricsSnapshot &snapshot)
     size_t actual = 0;
     bool enumerated = false;
     for (int attempt = 0; attempt < 3; ++attempt) {
-        buffer.resize(static_cast<int>(length), Qt::Uninitialized);
+        buffer.resize(static_cast<int>(length));
         actual = length;
         if (sysctl(mib, 4, buffer.data(), &actual, nullptr, 0) == 0) {
             enumerated = true;
