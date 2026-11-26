@@ -119,6 +119,33 @@ bool parseMeminfo(const QByteArray &contents, MemInfo &out)
     return out.totalBytes > 0;
 }
 
+bool parseProcPressure(const QByteArray &contents, ProcPressure &out)
+{
+    ProcPressure parsed;
+    bool found = false;
+
+    for (const QByteArray &line : contents.split('\n')) {
+        const QList<QByteArray> values = fields(line);
+        if (values.size() < 2) {
+            continue;
+        }
+        if (values.at(0) == "procs_running") {
+            if (!numberAt(values, 1, parsed.running)) {
+                return false;
+            }
+            found = true;
+        } else if (values.at(0) == "procs_blocked") {
+            if (!numberAt(values, 1, parsed.blocked)) {
+                return false;
+            }
+            found = true;
+        }
+    }
+
+    out = parsed;
+    return found;
+}
+
 bool parseNetDev(const QByteArray &contents, NetCounters &out)
 {
     NetCounters parsed;

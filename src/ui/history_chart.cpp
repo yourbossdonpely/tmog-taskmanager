@@ -81,7 +81,7 @@ void HistoryChart::paintEvent(QPaintEvent *)
     axisFont.setPixelSize(10);
     painter.setFont(axisFont);
 
-    const int leftGutter = m_scale == Scale::Percent ? 34 : 58;
+    const int leftGutter = m_scale == Scale::Percent ? 34 : (m_scale == Scale::Ratio ? 44 : 58);
     const QRectF plot = QRectF(rect()).adjusted(leftGutter, 10, -10, -8);
     if (plot.width() <= 4.0 || plot.height() <= 4.0) {
         return;
@@ -100,7 +100,8 @@ void HistoryChart::paintEvent(QPaintEvent *)
 
         const QString label = m_scale == Scale::Percent
             ? QStringLiteral("%1%").arg(qRound(fraction * 100.0))
-            : formatRate(fraction * m_maximum);
+            : m_scale == Scale::Ratio ? formatRatio(fraction * m_maximum)
+                                     : formatRate(fraction * m_maximum);
         painter.setPen(labelColor);
         painter.drawText(QRectF(0, y - 8, leftGutter - 7, 16),
                          Qt::AlignRight | Qt::AlignVCenter,

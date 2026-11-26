@@ -47,6 +47,7 @@ private:
     Card m_memoryCard;
     Card m_storageCard;
     Card m_networkCard;
+    Card m_processCard;
     QLabel *m_pill = nullptr;
     ThemeTokens m_theme;
     MetricsSnapshot m_snapshot;

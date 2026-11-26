@@ -1,11 +1,14 @@
 #include "core/metrics_internal.h"
 
 #include <QByteArray>
+#include <QThread>
 
+#include <cerrno>
 #include <mach/mach.h>
 #include <mach/mach_host.h>
 #include <net/if.h>
 #include <net/route.h>
+#include <sys/proc.h>
 #include <sys/socket.h>
 #include <sys/statvfs.h>
 #include <sys/sysctl.h>
@@ -13,6 +16,66 @@
 namespace tmog::detail {
 
 namespace {
+
+void readProcessPressure(MetricsSnapshot &snapshot)
+{
+    int cpuCount = 0;
+    size_t cpuSize = sizeof(cpuCount);
+    if (sysctlbyname("hw.logicalcpu", &cpuCount, &cpuSize, nullptr, 0) != 0
+        || cpuCount <= 0) {
+        cpuCount = QThread::idealThreadCount();
+    }
+    const quint32 cpus = static_cast<quint32>(qMax(1, cpuCount));
+
+    int mib[4] = {CTL_KERN, KERN_PROC, KERN_PROC_ALL, 0};
+    size_t length = 0;
+    if (sysctl(mib, 4, nullptr, &length, nullptr, 0) != 0 || length == 0) {
+        snapshot.processPressure =
+            Reading::unavailable(QStringLiteral("Cannot enumerate processes"));
+        return;
+    }
+
+    QByteArray buffer;
+    size_t actual = 0;
+    bool enumerated = false;
+    for (int attempt = 0; attempt < 3; ++attempt) {
+        buffer.resize(static_cast<int>(length), Qt::Uninitialized);
+        actual = length;
+        if (sysctl(mib, 4, buffer.data(), &actual, nullptr, 0) == 0) {
+            enumerated = true;
+            break;
+        }
+        if (errno != ENOMEM) {
+            break;
+        }
+        length += length / 2 + 4096;
+    }
+
+    if (!enumerated || actual < sizeof(kinfo_proc)) {
+        snapshot.processPressure =
+            Reading::unavailable(QStringLiteral("Process enumeration failed"));
+        return;
+    }
+
+    const auto *processes = reinterpret_cast<const kinfo_proc *>(buffer.constData());
+    const quint64 processCount = actual / sizeof(kinfo_proc);
+    quint64 runningCount = 0;
+    for (quint64 index = 0; index < processCount; ++index) {
+        if (processes[index].kp_proc.p_stat == SRUN) {
+            ++runningCount;
+        }
+    }
+
+    snapshot.logicalCpus = cpus;
+    snapshot.processCount = processCount;
+    snapshot.runnableCount = runningCount;
+    snapshot.processPressure = Reading::available(
+        static_cast<double>(runningCount) / static_cast<double>(cpus),
+        QStringLiteral("%1 running processes / %2 CPUs · %3 processes")
+            .arg(runningCount)
+            .arg(cpus)
+            .arg(processCount));
+}
 
 void readStorage(MetricsSnapshot &snapshot)
 {
@@ -162,6 +225,7 @@ MetricsSnapshot samplePlatform(PlatformState &state, double elapsedSeconds)
     }
 
     readStorage(snapshot);
+    readProcessPressure(snapshot);
 
     const auto network = readNetworkCounters();
     if (network) {

@@ -1,6 +1,9 @@
 #include "core/metrics_internal.h"
 
+#include <QDir>
 #include <QFile>
+#include <QStringList>
+#include <QThread>
 
 #include <sys/statvfs.h>
 
@@ -74,6 +77,38 @@ MetricsSnapshot samplePlatform(PlatformState &state, double elapsedSeconds)
         state.hasCpu = true;
     } else {
         snapshot.cpuPercent = Reading::unavailable(QStringLiteral("Cannot read /proc/stat"));
+    }
+
+    ProcPressure pressure;
+    if (parseProcPressure(stat, pressure)) {
+        const quint32 cpus = static_cast<quint32>(qMax(1, QThread::idealThreadCount()));
+        quint64 processCount = 0;
+        const QStringList entries = QDir(QStringLiteral("/proc"))
+                                        .entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+        for (const QString &entry : entries) {
+            bool ok = false;
+            entry.toUInt(&ok);
+            if (ok) {
+                ++processCount;
+            }
+        }
+
+        snapshot.logicalCpus = cpus;
+        snapshot.runnableCount = pressure.running;
+        snapshot.processCount = processCount;
+        QString detail = QStringLiteral("%1 runnable threads / %2 CPUs")
+                             .arg(pressure.running)
+                             .arg(cpus);
+        if (processCount > 0) {
+            detail += QStringLiteral(" · %1 processes").arg(processCount);
+        } else {
+            detail += QStringLiteral(" · process count unavailable");
+        }
+        snapshot.processPressure = Reading::available(
+            static_cast<double>(pressure.running) / static_cast<double>(cpus), detail);
+    } else {
+        snapshot.processPressure =
+            Reading::unavailable(QStringLiteral("Cannot read /proc/stat process counters"));
     }
 
     const QByteArray meminfo = readFile("/proc/meminfo");

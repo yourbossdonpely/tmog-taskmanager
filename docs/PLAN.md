@@ -74,7 +74,7 @@ restart; `--version` prints the version.
 
 ### Core
 
-- [x] `Reading`, `Availability`, `MetricsSnapshot` and counter-rate math.
+- [x] `Reading`, `Availability`, `MetricsSnapshot`, counter-rate math and process-pressure sampling.
 - [x] Sampler with configurable cadence; worker generation counter still to come.
 - [x] Pure `/proc/stat`, `/proc/meminfo` and `/proc/net/dev` parsers with fixture-based tests.
 - [ ] Provider registry and full health report.
@@ -86,6 +86,8 @@ restart; `--version` prints the version.
 - [ ] CPU per-logical-processor utilisation and frequency.
 - [x] Memory total/used/available.
 - [ ] Memory cached/buffers/swap composition.
+- [x] Process pressure: runnable/queued work per logical CPU and total process count.
+- [ ] Process enumeration details (PID, PPID, user, CPU time, memory, threads, command line).
 - [ ] Process enumeration: PID, PPID, name, user, status, CPU time, memory, threads,
   start time, architecture, command line.
 - [ ] Process tree and sorting/filtering model.
@@ -93,9 +95,9 @@ restart; `--version` prints the version.
 
 ### UI
 
-- [x] Summary: live CPU, memory, storage and network cards with explicit provider states.
+- [x] Summary: live CPU, memory, storage, network and process-pressure cards with explicit provider states.
 - [ ] Summary: top processes and mini panels.
-- [x] Performance: CPU, memory, network history and storage capacity with gaps for missing samples.
+- [x] Performance: CPU, memory, network and process-pressure history plus storage capacity, with gaps for missing samples.
 - [ ] Performance: per-subsystem selectors, per-processor detail and dual-axis CPU graph.
 - [ ] Processes: grouped tree, expand/collapse, filter, sort, selection by identity,
   detail strip, copy.

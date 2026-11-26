@@ -16,6 +16,7 @@ public:
     enum class Scale {
         Percent,
         Rate,
+        Ratio,
     };
 
     explicit HistoryChart(Scale scale, QWidget *parent = nullptr);

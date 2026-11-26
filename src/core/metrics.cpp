@@ -125,4 +125,12 @@ QString formatPercent(double value)
     return QStringLiteral("%1%").arg(clamped, 0, 'f', 0);
 }
 
+QString formatRatio(double value)
+{
+    if (!std::isfinite(value) || value < 0.0) {
+        return QStringLiteral("—");
+    }
+    return QStringLiteral("%1×").arg(value, 0, 'f', value < 10.0 ? 2 : 1);
+}
+
 } // namespace tmog

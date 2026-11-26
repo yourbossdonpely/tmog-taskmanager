@@ -33,6 +33,7 @@ private:
     HistoryChart *m_cpuChart = nullptr;
     HistoryChart *m_memoryChart = nullptr;
     HistoryChart *m_networkChart = nullptr;
+    HistoryChart *m_processChart = nullptr;
     SegmentBar *m_storageBar = nullptr;
 
     QLabel *m_pill = nullptr;
@@ -45,6 +46,9 @@ private:
     QLabel *m_networkValue = nullptr;
     QLabel *m_networkState = nullptr;
     QLabel *m_networkDetail = nullptr;
+    QLabel *m_processValue = nullptr;
+    QLabel *m_processState = nullptr;
+    QLabel *m_processDetail = nullptr;
     QLabel *m_storageValue = nullptr;
     QLabel *m_storageState = nullptr;
     QLabel *m_storageDetail = nullptr;
@@ -53,6 +57,7 @@ private:
     QVector<std::optional<double>> m_memoryHistory;
     QVector<std::optional<double>> m_downHistory;
     QVector<std::optional<double>> m_upHistory;
+    QVector<std::optional<double>> m_processHistory;
 
     ThemeTokens m_theme;
     MetricsSnapshot m_snapshot;

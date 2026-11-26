@@ -141,6 +141,10 @@ void testMetricsMath()
     CHECK(tmog::formatPercent(4.5) == QStringLiteral("4.5%"));
     CHECK(tmog::formatPercent(42.6) == QStringLiteral("43%"));
     CHECK(tmog::formatPercent(150) == QStringLiteral("100%"));
+    CHECK(tmog::formatRatio(0.25) == QStringLiteral("0.25×"));
+    CHECK(tmog::formatRatio(1.4) == QStringLiteral("1.40×"));
+    CHECK(tmog::formatRatio(12.3) == QStringLiteral("12.3×"));
+    CHECK(tmog::formatRatio(-1.0) == QStringLiteral("—"));
 }
 
 void testProcParsers()
@@ -184,6 +188,14 @@ void testProcParsers()
 
     tmog::NetCounters empty;
     CHECK(!tmog::parseNetDev(QByteArrayLiteral("no interfaces\n"), empty));
+
+    tmog::ProcPressure pressure;
+    CHECK(tmog::parseProcPressure(
+        QByteArrayLiteral("cpu 1 2 3 4\nprocs_running 3\nprocs_blocked 2\n"),
+        pressure));
+    CHECK(pressure.running == 3);
+    CHECK(pressure.blocked == 2);
+    CHECK(!tmog::parseProcPressure(QByteArrayLiteral("cpu 1 2 3 4\n"), pressure));
 }
 
 void testLiveSampler()
@@ -203,6 +215,13 @@ void testLiveSampler()
     CHECK(second.cpuPercent.state == tmog::Availability::Available);
     CHECK(second.memoryPercent.state == tmog::Availability::Available);
     CHECK(second.storagePercent.state == tmog::Availability::Available);
+    CHECK(second.processPressure.state == tmog::Availability::Available);
+    CHECK(second.processCount > 0);
+    CHECK(second.logicalCpus > 0);
+    CHECK(!second.processPressure.detail.isEmpty());
+    if (second.processPressure.hasValue()) {
+        CHECK(second.processPressure.value >= 0.0);
+    }
     if (second.cpuPercent.hasValue()) {
         CHECK(second.cpuPercent.value >= 0.0 && second.cpuPercent.value <= 100.0);
     }
@@ -221,6 +240,7 @@ void testLiveSampler()
     checkDetail(second.storagePercent);
     checkDetail(second.networkDownPerSecond);
     checkDetail(second.networkUpPerSecond);
+    checkDetail(second.processPressure);
 
     sampler.reset();
     const tmog::MetricsSnapshot afterReset = sampler.sample();

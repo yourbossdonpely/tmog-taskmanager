@@ -134,6 +134,16 @@ SummaryPage::SummaryPage(QWidget *parent)
                                content),
                     1,
                     1);
+    grid->addWidget(createCard(QStringLiteral("Process pressure"),
+                               m_theme.thermal,
+                               false,
+                               false,
+                               m_processCard,
+                               content),
+                    2,
+                    0,
+                    1,
+                    2);
     contentLayout->addLayout(grid);
 
     auto *note = new QFrame(content);
@@ -154,7 +164,8 @@ SummaryPage::SummaryPage(QWidget *parent)
     scroll->setWidget(content);
     outer->addWidget(scroll, 1);
 
-    for (Card *card : {&m_cpuCard, &m_memoryCard, &m_storageCard, &m_networkCard}) {
+    for (Card *card :
+         {&m_cpuCard, &m_memoryCard, &m_storageCard, &m_networkCard, &m_processCard}) {
         card->state->setText(QStringLiteral("WAITING"));
         card->state->setStyleSheet(
             QStringLiteral("color: %1;").arg(m_theme.textMuted.name()));
@@ -175,7 +186,9 @@ void SummaryPage::setTheme(const ThemeTokens &theme)
     m_memoryCard.accent = theme.memory;
     m_storageCard.accent = theme.disk;
     m_networkCard.accent = theme.network;
-    for (Card *card : {&m_cpuCard, &m_memoryCard, &m_storageCard, &m_networkCard}) {
+    m_processCard.accent = theme.thermal;
+    for (Card *card :
+         {&m_cpuCard, &m_memoryCard, &m_storageCard, &m_networkCard, &m_processCard}) {
         if (card->bar) {
             card->bar->setAccent(card->accent);
         }
@@ -233,18 +246,26 @@ void SummaryPage::applyCards()
         : network.detail;
     applyMetric(m_networkCard, network, networkValue, networkDetail);
 
+    applyMetric(m_processCard,
+                m_snapshot.processPressure,
+                formatRatio(m_snapshot.processPressure.value),
+                m_snapshot.processPressure.detail);
+
     const bool anyDenied = m_snapshot.cpuPercent.state == Availability::Denied
         || m_snapshot.memoryPercent.state == Availability::Denied
         || m_snapshot.storagePercent.state == Availability::Denied
-        || network.state == Availability::Denied;
+        || network.state == Availability::Denied
+        || m_snapshot.processPressure.state == Availability::Denied;
     const bool anyUnavailable = m_snapshot.cpuPercent.state == Availability::Unavailable
         || m_snapshot.memoryPercent.state == Availability::Unavailable
         || m_snapshot.storagePercent.state == Availability::Unavailable
-        || network.state == Availability::Unavailable;
+        || network.state == Availability::Unavailable
+        || m_snapshot.processPressure.state == Availability::Unavailable;
     const bool allAvailable = m_snapshot.cpuPercent.hasValue()
         && m_snapshot.memoryPercent.hasValue()
         && m_snapshot.storagePercent.hasValue()
-        && network.hasValue();
+        && network.hasValue()
+        && m_snapshot.processPressure.hasValue();
 
     if (anyDenied) {
         m_pill->setText(QStringLiteral("RESTRICTED"));

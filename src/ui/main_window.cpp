@@ -92,7 +92,7 @@ void MainWindow::buildDestinations()
     m_destinations = {
         {QStringLiteral("summary"), QStringLiteral("Summary"),
          QStringLiteral("One glance at the whole machine."),
-         QStringLiteral("The landing view will combine CPU, memory, storage, network and process pressure into one glance."),
+         QStringLiteral("CPU, memory, storage, network and process pressure at a glance."),
          QStringLiteral("OBSERVE"), QColor("#5b8cff"), true},
         {QStringLiteral("performance"), QStringLiteral("Performance"),
          QStringLiteral("History for every subsystem."),
@@ -342,15 +342,18 @@ void MainWindow::updateProviderStatus(const MetricsSnapshot &snapshot)
     const bool anyDenied = snapshot.cpuPercent.state == Availability::Denied
         || snapshot.memoryPercent.state == Availability::Denied
         || snapshot.storagePercent.state == Availability::Denied
-        || network.state == Availability::Denied;
+        || network.state == Availability::Denied
+        || snapshot.processPressure.state == Availability::Denied;
     const bool anyUnavailable = snapshot.cpuPercent.state == Availability::Unavailable
         || snapshot.memoryPercent.state == Availability::Unavailable
         || snapshot.storagePercent.state == Availability::Unavailable
-        || network.state == Availability::Unavailable;
+        || network.state == Availability::Unavailable
+        || snapshot.processPressure.state == Availability::Unavailable;
     const bool anyPending = snapshot.cpuPercent.state == Availability::Pending
         || snapshot.memoryPercent.state == Availability::Pending
         || snapshot.storagePercent.state == Availability::Pending
-        || network.state == Availability::Pending;
+        || network.state == Availability::Pending
+        || snapshot.processPressure.state == Availability::Pending;
 
     if (anyDenied) {
         m_statusLeft->setText(QStringLiteral("Restricted · a provider was denied"));

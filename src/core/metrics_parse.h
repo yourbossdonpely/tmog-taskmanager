@@ -32,8 +32,15 @@ struct NetCounters
     quint64 transmitBytes = 0;
 };
 
+struct ProcPressure
+{
+    quint64 running = 0;
+    quint64 blocked = 0;
+};
+
 bool parseProcStat(const QByteArray &contents, CpuTimes &out);
 bool parseMeminfo(const QByteArray &contents, MemInfo &out);
 bool parseNetDev(const QByteArray &contents, NetCounters &out);
+bool parseProcPressure(const QByteArray &contents, ProcPressure &out);
 
 } // namespace tmog

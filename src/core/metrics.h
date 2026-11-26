@@ -35,6 +35,7 @@ struct MetricsSnapshot
     Reading storagePercent;
     Reading networkDownPerSecond;
     Reading networkUpPerSecond;
+    Reading processPressure;
 
     quint64 memoryUsedBytes = 0;
     quint64 memoryTotalBytes = 0;
@@ -42,6 +43,9 @@ struct MetricsSnapshot
     quint64 storageTotalBytes = 0;
     quint64 networkDownTotalBytes = 0;
     quint64 networkUpTotalBytes = 0;
+    quint64 processCount = 0;
+    quint64 runnableCount = 0;
+    quint32 logicalCpus = 0;
     QString storageName;
 };
 
@@ -68,5 +72,6 @@ std::optional<double> counterRate(quint64 current, quint64 previous, double seco
 QString formatBytes(quint64 bytes);
 QString formatRate(double bytesPerSecond);
 QString formatPercent(double value);
+QString formatRatio(double value);
 
 } // namespace tmog

@@ -14,6 +14,9 @@
 #include <windows.h>
 #include <iphlpapi.h>
 #include <netioapi.h>
+#include <pdh.h>
+#include <pdhmsg.h>
+#include <tlhelp32.h>
 
 namespace tmog::detail {
 
@@ -66,6 +69,77 @@ void readStorage(MetricsSnapshot &snapshot)
     snapshot.storagePercent = Reading::available(
         *percent,
         QStringLiteral("%1 of %2").arg(formatBytes(used), formatBytes(totalBytes.QuadPart)));
+}
+
+void readProcessPressure(MetricsSnapshot &snapshot)
+{
+    quint64 processCount = 0;
+    bool processCountAvailable = false;
+    HANDLE processes = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if (processes != INVALID_HANDLE_VALUE) {
+        PROCESSENTRY32W entry{};
+        entry.dwSize = sizeof(entry);
+        if (Process32FirstW(processes, &entry)) {
+            do {
+                ++processCount;
+            } while (Process32NextW(processes, &entry));
+            processCountAvailable = true;
+        }
+        CloseHandle(processes);
+    }
+
+    quint32 cpus = GetActiveProcessorCount(ALL_PROCESSOR_GROUPS);
+    if (cpus == 0) {
+        SYSTEM_INFO info{};
+        GetSystemInfo(&info);
+        cpus = info.dwNumberOfProcessors;
+    }
+    cpus = qMax<quint32>(1, cpus);
+
+    snapshot.logicalCpus = cpus;
+    snapshot.processCount = processCountAvailable ? processCount : 0;
+
+    bool queueAvailable = false;
+    double queueLength = 0.0;
+    PDH_HQUERY query = nullptr;
+    PDH_HCOUNTER counter = nullptr;
+    if (PdhOpenQueryW(nullptr, 0, &query) == ERROR_SUCCESS) {
+        PDH_STATUS status = PdhAddEnglishCounterW(
+            query, L"\\System\\Processor Queue Length", 0, &counter);
+        if (status != ERROR_SUCCESS) {
+            status = PdhAddCounterW(
+                query, L"\\System\\Processor Queue Length", 0, &counter);
+        }
+        if (status == ERROR_SUCCESS && PdhCollectQueryData(query) == ERROR_SUCCESS) {
+            PDH_FMT_COUNTERVALUE value{};
+            if (PdhGetFormattedCounterValue(counter, PDH_FMT_DOUBLE, nullptr, &value)
+                    == ERROR_SUCCESS
+                && value.CStatus == PDH_CSTATUS_VALID_DATA) {
+                queueLength = value.doubleValue;
+                queueAvailable = true;
+            }
+        }
+        PdhCloseQuery(query);
+    }
+
+    if (!queueAvailable) {
+        snapshot.processPressure = Reading::unavailable(
+            processCountAvailable
+                ? QStringLiteral("Processor queue counter unavailable · %1 processes")
+                      .arg(processCount)
+                : QStringLiteral("Processor queue counter unavailable"));
+        return;
+    }
+
+    snapshot.runnableCount = static_cast<quint64>(qMax(0.0, queueLength));
+    QString detail = QStringLiteral("%1 queued threads / %2 CPUs")
+                         .arg(qRound64(queueLength))
+                         .arg(cpus);
+    if (processCountAvailable) {
+        detail += QStringLiteral(" · %1 processes").arg(processCount);
+    }
+    snapshot.processPressure = Reading::available(
+        queueLength / static_cast<double>(cpus), detail);
 }
 
 void readNetwork(PlatformState &state, MetricsSnapshot &snapshot, double elapsedSeconds)
@@ -175,6 +249,7 @@ MetricsSnapshot samplePlatform(PlatformState &state, double elapsedSeconds)
     }
 
     readStorage(snapshot);
+    readProcessPressure(snapshot);
     readNetwork(state, snapshot, elapsedSeconds);
 
     return snapshot;

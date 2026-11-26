@@ -127,6 +127,7 @@ PerformancePage::PerformancePage(QWidget *parent)
     m_cpuChart = new HistoryChart(HistoryChart::Scale::Percent, content);
     m_memoryChart = new HistoryChart(HistoryChart::Scale::Percent, content);
     m_networkChart = new HistoryChart(HistoryChart::Scale::Rate, content);
+    m_processChart = new HistoryChart(HistoryChart::Scale::Ratio, content);
 
     grid->addWidget(createChartCard(QStringLiteral("CPU"),
                                      m_cpuChart,
@@ -154,9 +155,16 @@ PerformancePage::PerformancePage(QWidget *parent)
                                      true,
                                      content),
                     1,
-                    0,
+                    0);
+    grid->addWidget(createChartCard(QStringLiteral("Process pressure"),
+                                     m_processChart,
+                                     m_processValue,
+                                     m_processState,
+                                     m_processDetail,
+                                     false,
+                                     content),
                     1,
-                    2);
+                    1);
 
     auto *storageCard = new QFrame(content);
     storageCard->setObjectName(QStringLiteral("Card"));
@@ -215,6 +223,7 @@ void PerformancePage::apply(const MetricsSnapshot &snapshot)
     appendSample(m_memoryHistory, snapshot.memoryPercent);
     appendSample(m_downHistory, snapshot.networkDownPerSecond);
     appendSample(m_upHistory, snapshot.networkUpPerSecond);
+    appendSample(m_processHistory, snapshot.processPressure);
 
     applyReadings();
     refreshCharts();
@@ -249,11 +258,13 @@ void PerformancePage::refreshCharts()
     m_cpuChart->setGridColor(m_theme.line);
     m_memoryChart->setGridColor(m_theme.line);
     m_networkChart->setGridColor(m_theme.line);
+    m_processChart->setGridColor(m_theme.line);
 
     m_cpuChart->setPrimary(m_cpuHistory, m_theme.cpu);
     m_memoryChart->setPrimary(m_memoryHistory, m_theme.memory);
     m_networkChart->setPrimary(m_downHistory, m_theme.network);
     m_networkChart->setSecondary(m_upHistory, m_theme.memory);
+    m_processChart->setPrimary(m_processHistory, m_theme.thermal);
 }
 
 void PerformancePage::applyReadings()
@@ -286,6 +297,15 @@ void PerformancePage::applyReadings()
                                             formatBytes(m_snapshot.networkUpTotalBytes))
                                  : network.detail);
 
+    applyReadingState(m_processState,
+                      m_snapshot.processPressure,
+                      m_theme,
+                      m_theme.thermal);
+    m_processValue->setText(m_snapshot.processPressure.hasValue()
+                                ? formatRatio(m_snapshot.processPressure.value)
+                                : QStringLiteral("—"));
+    m_processDetail->setText(m_snapshot.processPressure.detail);
+
     applyReadingState(m_storageState, m_snapshot.storagePercent, m_theme, m_theme.disk);
     m_storageValue->setText(m_snapshot.storagePercent.hasValue()
                                 ? formatPercent(m_snapshot.storagePercent.value)
@@ -303,15 +323,18 @@ void PerformancePage::applyReadings()
     const bool anyDenied = m_snapshot.cpuPercent.state == Availability::Denied
         || m_snapshot.memoryPercent.state == Availability::Denied
         || m_snapshot.storagePercent.state == Availability::Denied
-        || network.state == Availability::Denied;
+        || network.state == Availability::Denied
+        || m_snapshot.processPressure.state == Availability::Denied;
     const bool anyUnavailable = m_snapshot.cpuPercent.state == Availability::Unavailable
         || m_snapshot.memoryPercent.state == Availability::Unavailable
         || m_snapshot.storagePercent.state == Availability::Unavailable
-        || network.state == Availability::Unavailable;
+        || network.state == Availability::Unavailable
+        || m_snapshot.processPressure.state == Availability::Unavailable;
     const bool allAvailable = m_snapshot.cpuPercent.hasValue()
         && m_snapshot.memoryPercent.hasValue()
         && m_snapshot.storagePercent.hasValue()
-        && network.hasValue();
+        && network.hasValue()
+        && m_snapshot.processPressure.hasValue();
 
     if (anyDenied) {
         m_pill->setText(QStringLiteral("RESTRICTED"));
