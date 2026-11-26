@@ -33,7 +33,7 @@ QFrame *SummaryPage::createCard(const QString &title,
 {
     auto *frame = new QFrame(parent);
     frame->setObjectName(QStringLiteral("Card"));
-    frame->setFixedHeight(150);
+    frame->setMinimumHeight(150);
     auto *layout = new QVBoxLayout(frame);
     layout->setContentsMargins(16, 13, 16, 13);
     layout->setSpacing(5);

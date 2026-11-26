@@ -60,6 +60,7 @@ private:
 
     Settings &m_settings;
     QVector<Destination> m_destinations;
+    QWidget *m_sidebar = nullptr;
     QListWidget *m_nav = nullptr;
     QStackedWidget *m_pages = nullptr;
     QActionGroup *m_themeGroup = nullptr;

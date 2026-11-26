@@ -216,7 +216,7 @@ QString styleSheet(const ThemeTokens &theme, int textScalePercent)
             color: @line;
             font-size: @tinypx;
             font-weight: 600;
-            padding-top: 7px;
+            padding-top: 6px;
             padding-bottom: 1px;
         }
         #SidebarFooter {

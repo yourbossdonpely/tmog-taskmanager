@@ -151,6 +151,7 @@ void MainWindow::buildSidebar()
     auto *sidebar = new QWidget(central);
     sidebar->setObjectName(QStringLiteral("Sidebar"));
     sidebar->setFixedWidth(224);
+    m_sidebar = sidebar;
     auto *sideLayout = new QVBoxLayout(sidebar);
     sideLayout->setContentsMargins(0, 0, 0, 0);
     sideLayout->setSpacing(0);
@@ -175,7 +176,7 @@ void MainWindow::buildSidebar()
     m_nav->setObjectName(QStringLiteral("Nav"));
     m_nav->setFrameShape(QFrame::NoFrame);
     m_nav->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    m_nav->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    m_nav->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
     QString currentGroup;
     for (int index = 0; index < m_destinations.size(); ++index) {
@@ -430,6 +431,14 @@ void MainWindow::applyAppearance(const QString &themeId, int textScalePercent)
     m_settings.set(QStringLiteral("appearance/theme"), m_themeId);
     m_settings.set(QStringLiteral("appearance/text_scale"), m_textScale);
     m_settings.save();
+
+    if (m_sidebar) {
+        m_sidebar->setFixedWidth(qBound(224, 224 + (m_textScale - 100) * 21 / 20, 340));
+    }
+    if (m_nav) {
+        m_nav->setVerticalScrollBarPolicy(m_textScale > 100 ? Qt::ScrollBarAsNeeded
+                                                            : Qt::ScrollBarAlwaysOff);
+    }
 
     const ThemeTokens &activeTheme = themeById(m_themeId);
     if (m_summaryPage) {

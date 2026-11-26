@@ -160,7 +160,7 @@ PerformancePage::PerformancePage(QWidget *parent)
 
     auto *storageCard = new QFrame(content);
     storageCard->setObjectName(QStringLiteral("Card"));
-    storageCard->setFixedHeight(108);
+    storageCard->setMinimumHeight(108);
     auto *storageLayout = new QVBoxLayout(storageCard);
     storageLayout->setContentsMargins(16, 13, 16, 13);
     storageLayout->setSpacing(5);
