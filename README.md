@@ -9,8 +9,9 @@ Task Manager OG idea: one precise instrument that shows what the machine is doin
 process is responsible, and why it feels slow.
 
 > **Status: pre-alpha.** Live CPU, memory, storage, network and process-pressure readings
-> build and pass CI on Windows, macOS and Linux. The remaining destination providers,
-> installers and the first tagged release are still in progress. Nothing here is installable yet.
+> build and pass CI on Windows, macOS and Linux. The first tagged prerelease, **v0.1.0**,
+> ships Windows, universal macOS and Linux packages from the [Releases page](https://github.com/yourbossdonpely/tmog-taskmanager/releases/tag/v0.1.0).
+> Several destination providers are still module shells.
 
 ![Task Manager OG by Don PELY Summary](docs/preview-shell.png)
 
@@ -98,17 +99,23 @@ source counts runnable threads, queued threads or running processes.
   licence server and no Pro gate.
 - **Honest gaps.** When a provider stops, the trace stops. History shows the hole.
 
-## Planned platform support
+## Download
 
-| Platform | Architecture | Packages |
-| --- | --- | --- |
-| Windows 11 | x64, ARM64 | Inno Setup installer, portable ZIP |
-| macOS 14+ | Apple silicon, Intel x64 | Universal `.dmg` (or per-arch if required) |
-| Linux | x64, ARM64 | AppImage, `.deb`, `.tar.gz` |
+The [`v0.1.0` prerelease](https://github.com/yourbossdonpely/tmog-taskmanager/releases/tag/v0.1.0)
+contains fifteen assets:
 
-Release artifacts will be published on GitHub Releases with SHA-256 checksums and release
-notes. Code signing and macOS notarization will be enabled when the signing identities are
-available; unsigned development builds will be labelled as such.
+| Platform | Packages |
+| --- | --- |
+| Windows x64 | Inno Setup `.exe`, `.msi`, portable ZIP |
+| macOS 14+ universal | `.dmg`, portable ZIP |
+| Linux x64 | AppImage, `.deb`, `.rpm`, portable `.tar.gz` |
+
+Every package has a SHA-256 checksum in `SHA256SUMS.txt`. The Windows installers are
+self-signed with the included certificate; macOS is ad-hoc signed and **not notarized**;
+the Linux checksums and `latest.json` are signed with the included release key. These
+signatures establish integrity against the published keys, not identity against a public
+certificate authority. The app does not auto-update yet; `latest.json` is the signed
+manifest for future updater wiring.
 
 ## Build
 
