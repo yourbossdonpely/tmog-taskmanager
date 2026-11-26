@@ -17,7 +17,7 @@ export QMAKE="$qt/bin/qmake"
 export PATH="$qt/bin:$PATH"
 
 linuxdeploy="$work/linuxdeploy"
-qt_plugin="$work/linuxdeploy-plugin-qt"
+qt_plugin="$work/linuxdeploy-plugin-qt-x86_64.AppImage"
 appimagetool="$work/appimagetool"
 curl -fL --retry 3 -o "$linuxdeploy" \
     https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
