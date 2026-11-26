@@ -24,7 +24,7 @@ Success looks like:
 
 ### Goals
 
-1. Full parity across the twelve destinations on all three desktop platforms, with explicit
+1. Full parity across the fifteen destinations on all three desktop platforms, with explicit
    availability differences.
 2. Native-feeling UI with no browser runtime.
 3. Correct, testable measurement core with fixture-based tests.
@@ -41,7 +41,8 @@ Success looks like:
 - Automatic background updates in the first release (manual GitHub Releases download only).
 - Localisation beyond English in v1; the UI will be string-extracted so translation can
   follow without rework.
-- Copying the reference application's artwork, fonts, logo or exact pixel layout.
+- Copying the reference application's artwork, fonts or logo. The measured shell geometry
+  is documented in [UI_SPEC.md](UI_SPEC.md); the brand and icon set remain ours.
 
 ### Anti-goals
 
@@ -69,8 +70,8 @@ screen-reader labels on every control and graph summary.
 
 ## 3. Information architecture
 
-A persistent left rail lists destinations. It is grouped so scanning is faster than a flat
-list of twelve:
+A persistent left rail lists destinations in the owner-specified order. It is grouped so
+scanning is faster than a flat list of fifteen:
 
 ```
 OBSERVE
@@ -78,19 +79,21 @@ OBSERVE
   Performance
   Processes
 SYSTEM
-  System Info
-  Startup apps
+  System Information
+  App History
+  Startup Apps
   Users
   Services
 POWER & NETWORK
-  Power & Freq
+  Power and Frequency
+  Flight Recorder
   Connections
 STORAGE & APPS
   Installed Apps
-  Disk Space
+  Drivers
+  Deep Space
 TOOLS
   Benchmarks
-  Flight Recorder
 ```
 
 - `Summary` is the landing destination.
@@ -449,7 +452,7 @@ window title are asserted in a packaging test.
 | Linux fragmentation | Services/users missing without systemd | Capability detection and graceful degradation |
 | Qt LGPL compliance | Legal/release blocker | Dynamic linking, notices, relinkable libraries, SBOM check |
 | Signing certificates unavailable | SmartScreen/Gatekeeper warnings | Unsigned pre-releases clearly labelled; signing later without code changes |
-| Scope of twelve destinations | Long build | Milestones ship usable increments; Summary/Processes first |
+| Scope of fifteen destinations | Long build | Milestones ship usable increments; Summary/Processes first |
 | Product name uses another mark | Trademark risk | Non-affiliation notice; renameable without code changes |
 | Self-measurement overhead | Undermines the product promise | Performance budget, sampling backoff, self-monitoring view |
 
@@ -459,8 +462,9 @@ window title are asserted in a packaging test.
    consistent semantics. Revisit only if platform-native fidelity becomes a hard requirement.
 2. **All features free.** No Pro gate, no licence server, no account.
 3. **No network by default.** Manual update link only in v1.
-4. **Own visual identity.** Same information architecture and instrument metaphor, new
-   palette, type, spacing and brand.
+4. **Reference-matched shell, own identity.** The rail, header, card bands and spacing are
+   measured from the public screenshots and documented in [UI_SPEC.md](UI_SPEC.md). The
+   wordmark, line icons and written content are ours.
 5. **Open trace format.** Versioned `.tmx`, documented, no reverse-engineered upstream format.
 6. **Exact display name.** `Task Manager OG by Don PELY` in installers, shortcuts, window
    title and About; short binary/package names for filesystem and CLI ergonomics.

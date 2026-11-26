@@ -14,14 +14,14 @@ ThemeTokens makeDark(const QString &id, const QString &name, const QColor &accen
         .id = id,
         .name = name,
         .dark = true,
-        .surface = QColor("#0b0e13"),
-        .panel = QColor("#11161d"),
-        .panelRaised = QColor("#161d26"),
-        .line = QColor("#24303c"),
-        .text = QColor("#e7edf5"),
-        .textMuted = QColor("#8b9aab"),
+        .surface = QColor("#1e1e1e"),
+        .panel = QColor("#1e1e1e"),
+        .panelRaised = QColor("#262724"),
+        .line = QColor("#3a3b37"),
+        .text = QColor("#ecece7"),
+        .textMuted = QColor("#a3a39c"),
         .accent = accent,
-        .cpu = QColor("#69e06b"),
+        .cpu = QColor("#70e06a"),
         .memory = QColor("#d178ff"),
         .disk = QColor("#59d98e"),
         .network = QColor("#5b9dff"),
@@ -38,18 +38,18 @@ ThemeTokens makeLight()
         .id = QStringLiteral("light"),
         .name = QStringLiteral("Light"),
         .dark = false,
-        .surface = QColor("#f4f5f7"),
-        .panel = QColor("#ffffff"),
-        .panelRaised = QColor("#eef1f5"),
-        .line = QColor("#d7dce3"),
-        .text = QColor("#10151c"),
-        .textMuted = QColor("#5a6675"),
-        .accent = QColor("#2f5fd0"),
-        .cpu = QColor("#1c8a3a"),
+        .surface = QColor("#f1f2ee"),
+        .panel = QColor("#eceee8"),
+        .panelRaised = QColor("#ffffff"),
+        .line = QColor("#d7dbd2"),
+        .text = QColor("#171a16"),
+        .textMuted = QColor("#667068"),
+        .accent = QColor("#4d6dcc"),
+        .cpu = QColor("#1d8a3a"),
         .memory = QColor("#8a2bb8"),
         .disk = QColor("#177a4a"),
         .network = QColor("#235fbf"),
-        .energy = QColor("#9a7500"),
+        .energy = QColor("#8a6800"),
         .thermal = QColor("#b34d00"),
         .gpu = QColor("#3559b8"),
         .danger = QColor("#c02626"),
@@ -75,9 +75,9 @@ int scaled(int base, int scalePercent)
 const std::array<ThemeTokens, 6> &themes()
 {
     static const std::array<ThemeTokens, 6> value{
-        makeDark(QStringLiteral("dark"), QStringLiteral("Dark"), QColor("#5b8cff")),
+        makeDark(QStringLiteral("dark"), QStringLiteral("Dark"), QColor("#6f8fde")),
         makeLight(),
-        makeDark(QStringLiteral("green"), QStringLiteral("Green"), QColor("#69e06b")),
+        makeDark(QStringLiteral("green"), QStringLiteral("Green"), QColor("#70e06a")),
         makeDark(QStringLiteral("amber"), QStringLiteral("Amber"), QColor("#ffb257")),
         makeDark(QStringLiteral("blue"), QStringLiteral("Blue"), QColor("#5b9dff")),
         makeDark(QStringLiteral("mono"), QStringLiteral("Mono"), QColor("#c8d3df")),
@@ -115,21 +115,25 @@ QStringList themeNames()
 
 QString styleSheet(const ThemeTokens &theme, int textScalePercent)
 {
-    const int body = scaled(13, textScalePercent);
-    const int small = scaled(11, textScalePercent);
+    const int body = scaled(14, textScalePercent);
+    const int small = scaled(12, textScalePercent);
     const int tiny = scaled(10, textScalePercent);
-    const int heading = scaled(26, textScalePercent);
-    const int subheading = scaled(15, textScalePercent);
-    const int metric = scaled(28, textScalePercent);
-    const int metricCompact = scaled(18, textScalePercent);
-    const QString selection = rgba(theme.accent, theme.dark ? 0.26 : 0.16);
-    const QString hover = rgba(theme.accent, theme.dark ? 0.12 : 0.08);
-    const QString card = rgba(theme.panelRaised, theme.dark ? 0.55 : 0.75);
+    const int heading = scaled(36, textScalePercent);
+    const int subheading = scaled(22, textScalePercent);
+    const int detailHeading = scaled(26, textScalePercent);
+    const int brand = scaled(30, textScalePercent);
+    const int metric = scaled(30, textScalePercent);
+    const int metricCompact = scaled(22, textScalePercent);
+    const int miniTitle = scaled(13, textScalePercent);
+    const QString selection = theme.dark ? QStringLiteral("#2c3550") : QStringLiteral("#dce5fb");
+    const QString hover = theme.dark ? QStringLiteral("rgba(255,255,255,0.055)")
+                                     : QStringLiteral("rgba(0,0,0,0.045)");
+    const QString card = theme.panelRaised.name();
 
     QString sheet = QStringLiteral(R"(
         QWidget {
             color: @text;
-            font-family: "Segoe UI", "Inter", "Helvetica Neue", sans-serif;
+            font-family: "Segoe UI Variable", "SF Pro Text", "Inter", "Segoe UI", "Helvetica Neue", sans-serif;
             font-size: @bodypx;
         }
         QMainWindow, QDialog {
@@ -174,17 +178,17 @@ QString styleSheet(const ThemeTokens &theme, int textScalePercent)
             border-right: 1px solid @line;
         }
         #BrandBlock {
-            padding: 18px 16px 14px 18px;
+            background: transparent;
         }
         #BrandMark {
             color: @accent;
-            font-family: "Cascadia Mono", "IBM Plex Mono", "Consolas", monospace;
-            font-size: @subheadingpx;
+            font-family: "SF Mono", "Cascadia Mono", "IBM Plex Mono", "Consolas", monospace;
+            font-size: @brandpx;
             font-weight: 700;
         }
         #BrandLine {
             color: @text;
-            font-size: @smallpx;
+            font-size: @tinypx;
             font-weight: 600;
         }
         #BrandByline {
@@ -195,102 +199,152 @@ QString styleSheet(const ThemeTokens &theme, int textScalePercent)
             background: transparent;
             border: none;
             outline: 0;
-            padding: 2px 0;
+            padding: 0;
         }
         QListWidget#Nav::item {
-            color: @textMuted;
-            font-size: 12px;
-            padding: 4px 10px;
-            margin: 0 8px;
-            border-radius: 6px;
-        }
-        QListWidget#Nav::item:hover {
-            background: @hover;
-            color: @text;
-        }
-        QListWidget#Nav::item:selected {
-            background: @selection;
-            color: @text;
-        }
-        QListWidget#Nav::item:disabled {
-            color: @line;
-            font-size: @tinypx;
-            font-weight: 600;
-            padding-top: 6px;
-            padding-bottom: 1px;
+            background: transparent;
+            border: none;
+            padding: 0;
         }
         #SidebarFooter {
+            background: @panel;
             border-top: 1px solid @line;
-            padding: 6px;
         }
-        QPushButton {
-            background: @panelRaised;
-            color: @text;
-            border: 1px solid @line;
-            border-radius: 6px;
-            padding: 7px 12px;
-        }
-        QPushButton:hover {
-            border-color: @accent;
-        }
-        QPushButton:pressed {
-            background: @selection;
-        }
-        QPushButton#GhostButton {
+        QPushButton#FooterButton {
             background: transparent;
             border: 1px solid transparent;
             color: @textMuted;
             text-align: left;
-            padding: 7px 10px;
+            padding: 0 14px;
+            min-height: 44px;
+            border-radius: 6px;
         }
-        QPushButton#GhostButton:hover {
+        QPushButton#FooterButton:hover {
             background: @hover;
             color: @text;
         }
+        QPushButton#FooterButton:pressed {
+            background: @selection;
+        }
+        QToolButton#HeaderMenuButton {
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: 6px;
+        }
+        QToolButton#HeaderMenuButton:hover {
+            background: @hover;
+            border-color: @line;
+        }
         #PageHeader {
-            padding: 22px 26px 12px 26px;
+            background: @surface;
         }
         #PageTitle {
             color: @text;
+            font-family: "Segoe UI Variable Display", "SF Pro Display", "Inter", "Segoe UI", sans-serif;
             font-size: @headingpx;
-            font-weight: 600;
+            font-weight: 300;
+        }
+        #DetailTitle {
+            color: @text;
+            font-family: "Segoe UI Variable Display", "SF Pro Display", "Inter", "Segoe UI", sans-serif;
+            font-size: @detailheadingpx;
+            font-weight: 400;
         }
         #PageSubtitle {
             color: @textMuted;
             font-size: @smallpx;
         }
         #StatusPill {
-            background: @card;
+            background: transparent;
             border: 1px solid @line;
-            border-radius: 10px;
+            border-radius: 9px;
             color: @textMuted;
+            font-family: "SF Mono", "Cascadia Mono", "Consolas", monospace;
             font-size: @tinypx;
-            padding: 4px 10px;
+            padding: 4px 9px;
         }
-        #Card {
+        #Card, #FeatureCard, #ModuleHero {
             background: @card;
             border: 1px solid @line;
+            border-radius: 8px;
+        }
+        #ModuleIconTile {
+            background: @surface;
+            border: 1px solid @line;
             border-radius: 10px;
+        }
+        #SnapshotPanel {
+            background: @surface;
+            border: 1px solid @line;
+            border-radius: 7px;
+        }
+        #ModuleBadge {
+            font-family: "SF Mono", "Cascadia Mono", "Consolas", monospace;
+            font-size: @tinypx;
+            font-weight: 600;
+        }
+        #ModuleTitle {
+            color: @text;
+            font-size: @subheadingpx;
+            font-weight: 500;
+        }
+        #ModuleBody {
+            color: @textMuted;
+            font-size: @smallpx;
         }
         #CardTitle {
             color: @text;
             font-size: @subheadingpx;
-            font-weight: 600;
+            font-weight: 500;
         }
         #CardBody {
             color: @textMuted;
             font-size: @smallpx;
         }
-        #CardAccent {
-            font-family: "Cascadia Mono", "IBM Plex Mono", "Consolas", monospace;
+        #MiniTitle {
+            font-size: @minititlepx;
+            font-weight: 600;
+        }
+        #SignalLabel {
+            color: @textMuted;
+            font-size: @smallpx;
+            font-weight: 500;
+        }
+        #SignalValue {
+            color: @text;
+            font-family: "SF Mono", "Cascadia Mono", "IBM Plex Mono", "Consolas", monospace;
+            font-size: @subheadingpx;
+            font-weight: 600;
+        }
+        #MetricValue {
+            color: @text;
+            font-family: "SF Mono", "Cascadia Mono", "IBM Plex Mono", "Consolas", monospace;
+            font-size: @metricpx;
+            font-weight: 500;
+        }
+        #MetricValueCompact {
+            color: @text;
+            font-family: "SF Mono", "Cascadia Mono", "IBM Plex Mono", "Consolas", monospace;
+            font-size: @compactpx;
+            font-weight: 500;
+        }
+        #MetricDetail {
+            color: @textMuted;
+            font-size: @smallpx;
+        }
+        #MetricState {
+            font-family: "SF Mono", "Cascadia Mono", "Consolas", monospace;
             font-size: @tinypx;
             font-weight: 600;
-            color: @accent;
+        }
+        #ChartLegend {
+            color: @textMuted;
+            font-size: @tinypx;
         }
         #EmptyState {
             background: @card;
             border: 1px dashed @line;
-            border-radius: 10px;
+            border-radius: 8px;
         }
         #EmptyTitle {
             color: @text;
@@ -304,46 +358,6 @@ QString styleSheet(const ThemeTokens &theme, int textScalePercent)
         #SignalGrid {
             background: transparent;
         }
-        #SignalCell {
-            background: @card;
-            border: 1px solid @line;
-            border-radius: 8px;
-        }
-        #SignalLabel {
-            color: @textMuted;
-            font-size: @tinypx;
-        }
-        #SignalValue {
-            color: @text;
-            font-family: "Cascadia Mono", "IBM Plex Mono", "Consolas", monospace;
-            font-size: @subheadingpx;
-            font-weight: 600;
-        }
-        #MetricValue {
-            color: @text;
-            font-family: "Cascadia Mono", "IBM Plex Mono", "Consolas", monospace;
-            font-size: @metricpx;
-            font-weight: 600;
-        }
-        #MetricValueCompact {
-            color: @text;
-            font-family: "Cascadia Mono", "IBM Plex Mono", "Consolas", monospace;
-            font-size: @compactpx;
-            font-weight: 600;
-        }
-        #MetricDetail {
-            color: @textMuted;
-            font-size: @smallpx;
-        }
-        #MetricState {
-            font-family: "Cascadia Mono", "IBM Plex Mono", "Consolas", monospace;
-            font-size: @tinypx;
-            font-weight: 600;
-        }
-        #ChartLegend {
-            color: @textMuted;
-            font-size: @tinypx;
-        }
         QStatusBar {
             background: @panel;
             color: @textMuted;
@@ -352,6 +366,11 @@ QString styleSheet(const ThemeTokens &theme, int textScalePercent)
         }
         QStatusBar::item {
             border: none;
+        }
+        #StatusText {
+            color: @textMuted;
+            font-family: "SF Mono", "Cascadia Mono", "Consolas", monospace;
+            font-size: @tinypx;
         }
         QLineEdit, QComboBox {
             background: @panelRaised;
@@ -370,6 +389,19 @@ QString styleSheet(const ThemeTokens &theme, int textScalePercent)
             border: 1px solid @line;
             selection-background-color: @selection;
         }
+        QPushButton {
+            background: @panelRaised;
+            color: @text;
+            border: 1px solid @line;
+            border-radius: 6px;
+            padding: 7px 12px;
+        }
+        QPushButton:hover {
+            border-color: @accent;
+        }
+        QPushButton:pressed {
+            background: @selection;
+        }
         QDialogButtonBox QPushButton {
             min-width: 84px;
         }
@@ -378,6 +410,22 @@ QString styleSheet(const ThemeTokens &theme, int textScalePercent)
             background: transparent;
         }
         QScrollArea > QWidget > QWidget, #ScrollViewport, #Pages {
+            background: transparent;
+        }
+        QScrollBar:vertical {
+            background: transparent;
+            width: 8px;
+            margin: 2px;
+        }
+        QScrollBar::handle:vertical {
+            background: @line;
+            min-height: 28px;
+            border-radius: 3px;
+        }
+        QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+            height: 0;
+        }
+        QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
             background: transparent;
         }
     )");
@@ -397,6 +445,9 @@ QString styleSheet(const ThemeTokens &theme, int textScalePercent)
     sheet.replace(QStringLiteral("@tinypx"), QStringLiteral("%1px").arg(tiny));
     sheet.replace(QStringLiteral("@headingpx"), QStringLiteral("%1px").arg(heading));
     sheet.replace(QStringLiteral("@subheadingpx"), QStringLiteral("%1px").arg(subheading));
+    sheet.replace(QStringLiteral("@detailheadingpx"), QStringLiteral("%1px").arg(detailHeading));
+    sheet.replace(QStringLiteral("@brandpx"), QStringLiteral("%1px").arg(brand));
+    sheet.replace(QStringLiteral("@minititlepx"), QStringLiteral("%1px").arg(miniTitle));
     sheet.replace(QStringLiteral("@metricpx"), QStringLiteral("%1px").arg(metric));
     sheet.replace(QStringLiteral("@compactpx"), QStringLiteral("%1px").arg(metricCompact));
     return sheet;

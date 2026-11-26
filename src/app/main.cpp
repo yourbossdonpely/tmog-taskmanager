@@ -89,6 +89,11 @@ int main(int argc, char **argv)
         return 0;
     }
 
+    const bool screenshotRequested = hasArgument(argc, argv, "--screenshot");
+    if (screenshotRequested) {
+        QCoreApplication::setAttribute(Qt::AA_Use96Dpi);
+    }
+
     QApplication app(argc, argv);
     QApplication::setApplicationName(QStringLiteral("TaskManagerOG"));
     QApplication::setApplicationDisplayName(tmog::productName());
@@ -113,6 +118,9 @@ int main(int argc, char **argv)
     settings.load();
 
     tmog::ui::MainWindow window(settings);
+    if (parser.isSet(screenshotOption)) {
+        window.setFixedSize(1800, 1156);
+    }
     window.show();
 
     if (parser.isSet(screenshotOption)) {

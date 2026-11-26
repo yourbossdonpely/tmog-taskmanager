@@ -14,6 +14,7 @@ class QListWidget;
 class QMenu;
 class QStackedWidget;
 class QTimer;
+class QToolButton;
 
 namespace tmog {
 class Settings;
@@ -21,6 +22,8 @@ class Settings;
 
 namespace tmog::ui {
 
+class LineIcon;
+class NavDelegate;
 class PerformancePage;
 class SummaryPage;
 
@@ -31,8 +34,8 @@ struct Destination
     QString subtitle;
     QString note;
     QString group;
+    QString iconKey;
     QColor accent;
-    bool showcase = false;
 };
 
 class MainWindow : public QMainWindow
@@ -45,10 +48,13 @@ public:
 private:
     void buildDestinations();
     void buildSidebar();
+    void buildPageHeader();
     void buildMenus();
     void buildStatusBar();
     void buildPages();
 
+    void updatePageHeader();
+    void showAppMenu();
     void sampleNow();
     void updateProviderStatus(const MetricsSnapshot &snapshot);
     void navigateTo(int destinationIndex);
@@ -62,9 +68,15 @@ private:
     QVector<Destination> m_destinations;
     QWidget *m_sidebar = nullptr;
     QListWidget *m_nav = nullptr;
+    NavDelegate *m_navDelegate = nullptr;
+    QWidget *m_pageHeader = nullptr;
+    LineIcon *m_pageIcon = nullptr;
+    QLabel *m_pageTitle = nullptr;
+    QToolButton *m_menuButton = nullptr;
     QStackedWidget *m_pages = nullptr;
     QActionGroup *m_themeGroup = nullptr;
     QActionGroup *m_scaleGroup = nullptr;
+    QLabel *m_statusDot = nullptr;
     QLabel *m_statusLeft = nullptr;
     QLabel *m_statusRight = nullptr;
     SummaryPage *m_summaryPage = nullptr;

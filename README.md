@@ -14,12 +14,17 @@ process is responsible, and why it feels slow.
 
 ![Task Manager OG by Don PELY Summary](docs/preview-shell.png)
 
-*Summary on Windows: real readings, provider state, and capacity meters. Sampled at 250 ms
-for a fuller picture in the screenshot.*
+*Summary on Windows at the measured 1800 × 1156 reference geometry: live gauges, CPU and
+process-pressure history, the memory band and the six-card strip. Sampled at 250 ms.*
 
 ![Task Manager OG by Don PELY Performance](docs/preview-performance.png)
 
-*Performance history. A missing sample becomes a gap in the trace, never a zero.*
+*Performance: subsystem rail, large selected history, and live snapshot. A missing sample
+becomes a gap in the trace, never a zero.*
+
+![Task Manager OG by Don PELY Light theme](docs/preview-light.png)
+
+*Every surface, gauge and chart has a full light-theme treatment, not an inverted graph.*
 
 ---
 
@@ -37,14 +42,25 @@ This project follows four rules:
 4. **Local by default.** No telemetry, no advertising identifiers, no upload of process or
    hardware data. The app works offline.
 
-## The twelve destinations
+## The fifteen destinations
+
+The rail order is fixed, and every destination is free:
 
 | Observe | System | Power & network | Storage & apps | Tools |
 | --- | --- | --- | --- | --- |
-| Summary | System Info | Power & Freq | Installed Apps | Benchmarks |
-| Performance | Startup apps | Connections | Disk Space | Flight Recorder |
-| Processes | Users | | | |
+| Summary | System Information | Power and Frequency | Installed Apps | Benchmarks |
+| Performance | App History | Flight Recorder | Drivers | |
+| Processes | Startup Apps | Connections | Deep Space | |
+| | Users | | | |
 | | Services | | | |
+
+The rail reads top to bottom: Summary, Performance, Processes, System Information, App
+History, Startup Apps, Users, Services, Power and Frequency, Flight Recorder, Connections,
+Installed Apps, Drivers, Deep Space, Benchmarks.
+
+There is no Pro divider, no locked row and no paid tier. The shell is measured against the
+official TMOG screenshots at 1800 × 1156; see [UI specification](docs/UI_SPEC.md) for the
+pixel measurements, type scale and the deliberate differences.
 
 Live CPU, memory, storage, network and process-pressure readings are implemented on all
 three platforms. Still planned: per-processor detail, GPU, energy and thermal measurement;
@@ -137,6 +153,7 @@ The planned `--snapshot` and `--self-test` commands will use the same measuremen
 ## Documentation
 
 - [Research: the reference application and what we learned](docs/RESEARCH.md)
+- [UI specification and reference measurements](docs/UI_SPEC.md)
 - [Product and technical design](docs/DESIGN.md)
 - [Implementation plan and release checklist](docs/PLAN.md)
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QColor>
+#include <QString>
 #include <QWidget>
 
 class QLabel;
@@ -35,10 +36,9 @@ class DestinationPage : public QWidget
 
 public:
     DestinationPage(const QString &title,
-                    const QString &subtitle,
                     const QString &note,
                     const QColor &accent,
-                    bool showcase,
+                    const QString &iconKey,
                     QWidget *parent = nullptr);
 };
 

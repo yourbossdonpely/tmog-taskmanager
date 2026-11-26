@@ -76,13 +76,13 @@ void testThemes()
     CHECK(tmog::ui::themeById(QStringLiteral("missing")).id == QStringLiteral("dark"));
 
     const QString sheet = tmog::ui::styleSheet(tmog::ui::themeById(QStringLiteral("dark")), 100);
-    CHECK(sheet.contains(QStringLiteral("#0b0e13")));
-    CHECK(sheet.contains(QStringLiteral("13px")));
-    CHECK(sheet.contains(QStringLiteral("#5b8cff")));
+    CHECK(sheet.contains(QStringLiteral("#1e1e1e")));
+    CHECK(sheet.contains(QStringLiteral("14px")));
+    CHECK(sheet.contains(QStringLiteral("#6f8fde")));
     CHECK(!sheet.contains(QStringLiteral("@surface")));
 
     const QString large = tmog::ui::styleSheet(tmog::ui::themeById(QStringLiteral("clear")), 200);
-    CHECK(large.contains(QStringLiteral("26px")));
+    CHECK(large.contains(QStringLiteral("72px")));
     CHECK(tmog::ui::themeById(QStringLiteral("clear")).id == QStringLiteral("dark"));
 }
 

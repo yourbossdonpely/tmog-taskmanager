@@ -1,5 +1,8 @@
 #include "ui/destination_page.h"
 
+#include "ui/icons.h"
+#include "ui/theme.h"
+
 #include <QFrame>
 #include <QGridLayout>
 #include <QHBoxLayout>
@@ -73,30 +76,28 @@ QLabel *label(const QString &text, const char *objectName, QWidget *parent)
     return item;
 }
 
-QFrame *signalCard(const QString &title, const QString &value, const QColor &accent, QWidget *parent)
+QFrame *featureCard(const QString &iconKey,
+                    const QString &title,
+                    const QString &body,
+                    const QColor &accent,
+                    QWidget *parent)
 {
     auto *card = new QFrame(parent);
-    card->setObjectName(QStringLiteral("Card"));
-    card->setFixedHeight(112);
+    card->setObjectName(QStringLiteral("FeatureCard"));
+    card->setMinimumHeight(190);
+
     auto *layout = new QVBoxLayout(card);
-    layout->setContentsMargins(16, 14, 16, 14);
-    layout->setSpacing(8);
+    layout->setContentsMargins(20, 18, 20, 18);
+    layout->setSpacing(10);
 
-    auto *top = new QHBoxLayout();
-    auto *name = label(title, "SignalLabel", card);
-    auto *state = label(QStringLiteral("PENDING"), "CardAccent", card);
-    top->addWidget(name);
-    top->addStretch();
-    top->addWidget(state);
-    layout->addLayout(top);
+    auto *icon = new LineIcon(iconKey, card);
+    icon->setIconSize(26);
+    icon->setColor(accent);
+    layout->addWidget(icon, 0, Qt::AlignLeft);
 
-    auto *reading = label(value, "SignalValue", card);
-    layout->addWidget(reading);
-
-    auto *bar = new SegmentBar(card);
-    bar->setAccent(accent);
-    bar->setValue(0.0);
-    layout->addWidget(bar);
+    layout->addWidget(label(title, "CardTitle", card));
+    layout->addWidget(label(body, "CardBody", card));
+    layout->addStretch();
 
     return card;
 }
@@ -104,34 +105,15 @@ QFrame *signalCard(const QString &title, const QString &value, const QColor &acc
 } // namespace
 
 DestinationPage::DestinationPage(const QString &title,
-                                 const QString &subtitle,
                                  const QString &note,
                                  const QColor &accent,
-                                 bool showcase,
+                                 const QString &iconKey,
                                  QWidget *parent)
     : QWidget(parent)
 {
     auto *outer = new QVBoxLayout(this);
     outer->setContentsMargins(0, 0, 0, 0);
     outer->setSpacing(0);
-
-    auto *header = new QWidget(this);
-    header->setObjectName(QStringLiteral("PageHeader"));
-    auto *headerLayout = new QHBoxLayout(header);
-    headerLayout->setContentsMargins(26, 22, 26, 12);
-    headerLayout->setSpacing(12);
-
-    auto *titles = new QVBoxLayout();
-    titles->setSpacing(4);
-    auto *titleLabel = label(title, "PageTitle", header);
-    auto *subtitleLabel = label(subtitle, "PageSubtitle", header);
-    titles->addWidget(titleLabel);
-    titles->addWidget(subtitleLabel);
-    headerLayout->addLayout(titles, 1);
-
-    auto *pill = label(QStringLiteral("FOUNDATION BUILD"), "StatusPill", header);
-    headerLayout->addWidget(pill, 0, Qt::AlignTop);
-    outer->addWidget(header);
 
     auto *scroll = new QScrollArea(this);
     scroll->setWidgetResizable(true);
@@ -141,58 +123,95 @@ DestinationPage::DestinationPage(const QString &title,
 
     auto *content = new QWidget(scroll);
     auto *contentLayout = new QVBoxLayout(content);
-    contentLayout->setContentsMargins(26, 8, 26, 26);
-    contentLayout->setSpacing(14);
+    contentLayout->setContentsMargins(22, 0, 16, 20);
+    contentLayout->setSpacing(0);
 
-    if (showcase) {
-        auto *grid = new QGridLayout();
-        grid->setSpacing(12);
-        grid->addWidget(signalCard(QStringLiteral("CPU"), QStringLiteral("—"), QColor("#69e06b"), content), 0, 0);
-        grid->addWidget(signalCard(QStringLiteral("Memory"), QStringLiteral("—"), QColor("#d178ff"), content), 0, 1);
-        grid->addWidget(signalCard(QStringLiteral("Storage"), QStringLiteral("—"), QColor("#59d98e"), content), 1, 0);
-        grid->addWidget(signalCard(QStringLiteral("Network"), QStringLiteral("—"), QColor("#5b9dff"), content), 1, 1);
-        contentLayout->addLayout(grid);
+    auto *hero = new QFrame(content);
+    hero->setObjectName(QStringLiteral("ModuleHero"));
+    hero->setFixedHeight(176);
+    auto *heroLayout = new QHBoxLayout(hero);
+    heroLayout->setContentsMargins(26, 22, 26, 22);
+    heroLayout->setSpacing(20);
 
-        auto *card = new QFrame(content);
-        card->setObjectName(QStringLiteral("Card"));
-        auto *cardLayout = new QVBoxLayout(card);
-        cardLayout->setContentsMargins(18, 16, 18, 16);
-        cardLayout->setSpacing(6);
-        cardLayout->addWidget(label(QStringLiteral("Precision instrumentation"), "CardTitle", card));
-        cardLayout->addWidget(label(
-            QStringLiteral("Every reading will be real, explicitly unavailable, or explicitly denied. "
-                           "A stopped provider leaves a gap in history — never a fabricated zero."),
-            "CardBody",
-            card));
-        contentLayout->addWidget(card);
-    }
+    auto *iconTile = new QFrame(hero);
+    iconTile->setObjectName(QStringLiteral("ModuleIconTile"));
+    iconTile->setFixedSize(72, 72);
+    auto *iconLayout = new QVBoxLayout(iconTile);
+    iconLayout->setContentsMargins(0, 0, 0, 0);
+    auto *icon = new LineIcon(iconKey, iconTile);
+    icon->setIconSize(34);
+    icon->setColor(accent);
+    iconLayout->addWidget(icon, 0, Qt::AlignCenter);
+    heroLayout->addWidget(iconTile, 0, Qt::AlignVCenter);
 
-    auto *empty = new QFrame(content);
-    empty->setObjectName(QStringLiteral("EmptyState"));
-    empty->setMinimumHeight(180);
-    auto *emptyLayout = new QVBoxLayout(empty);
-    emptyLayout->setContentsMargins(24, 30, 24, 30);
-    emptyLayout->setSpacing(8);
-    emptyLayout->setSizeConstraint(QLayout::SetMinimumSize);
-    auto *emptyTitle = label(QStringLiteral("This destination is wired."), "EmptyTitle", empty);
-    emptyTitle->setWordWrap(false);
-    emptyLayout->addWidget(emptyTitle, 0, Qt::AlignHCenter);
-    auto *body = label(note, "EmptyBody", empty);
-    body->setAlignment(Qt::AlignHCenter);
-    body->setFixedWidth(720);
-    body->setMinimumHeight(52);
-    body->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Minimum);
-    emptyLayout->addWidget(body, 0, Qt::AlignHCenter);
-    auto *status = label(QStringLiteral("Measurement providers arrive in v0.2"), "CardAccent", empty);
-    status->setAlignment(Qt::AlignHCenter);
-    status->setWordWrap(false);
-    status->setMinimumWidth(320);
-    status->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    status->setStyleSheet(QStringLiteral("color: %1;").arg(accent.name()));
-    emptyLayout->addWidget(status, 0, Qt::AlignHCenter);
-    contentLayout->addWidget(empty);
+    auto *heroText = new QVBoxLayout();
+    heroText->setSpacing(8);
+    auto *badge = label(QStringLiteral("FREE · INCLUDED"), "ModuleBadge", hero);
+    badge->setStyleSheet(QStringLiteral("color: %1;").arg(accent.name()));
+    heroText->addWidget(badge, 0, Qt::AlignLeft);
+    heroText->addWidget(label(title, "ModuleTitle", hero));
+    auto *body = label(note, "ModuleBody", hero);
+    body->setMaximumWidth(860);
+    heroText->addWidget(body);
+    heroText->addStretch();
+    heroLayout->addLayout(heroText, 1);
 
+    auto *state = label(QStringLiteral("PROVIDER PLANNED"), "StatusPill", hero);
+    heroLayout->addWidget(state, 0, Qt::AlignTop);
+    contentLayout->addWidget(hero);
+    contentLayout->addSpacing(12);
+
+    auto *features = new QGridLayout();
+    features->setSpacing(12);
+    features->addWidget(featureCard(iconKey,
+                                    QStringLiteral("One place for the whole story"),
+                                    note,
+                                    accent,
+                                    content),
+                        0,
+                        0);
+    features->addWidget(featureCard(QStringLiteral("app-history"),
+                                    QStringLiteral("Free in every build"),
+                                    QStringLiteral("No Pro gate, no account and no licence server. "
+                                                   "Every destination in this app is part of the "
+                                                   "same free product."),
+                                    accent,
+                                    content),
+                        0,
+                        1);
+    features->addWidget(featureCard(QStringLiteral("system-info"),
+                                    QStringLiteral("Measured, never invented"),
+                                    QStringLiteral("When a provider is unavailable or denied, this "
+                                                   "page says why. A missing value is never filled "
+                                                   "with a plausible zero."),
+                                    accent,
+                                    content),
+                        0,
+                        2);
+    contentLayout->addLayout(features);
+    contentLayout->addSpacing(12);
+
+    auto *status = new QFrame(content);
+    status->setObjectName(QStringLiteral("Card"));
+    auto *statusLayout = new QHBoxLayout(status);
+    statusLayout->setContentsMargins(20, 16, 20, 16);
+    statusLayout->setSpacing(14);
+    auto *statusIcon = new LineIcon(QStringLiteral("settings"), status);
+    statusIcon->setIconSize(20);
+    statusIcon->setColor(accent);
+    statusLayout->addWidget(statusIcon, 0, Qt::AlignTop);
+    auto *statusText = new QVBoxLayout();
+    statusText->setSpacing(3);
+    statusText->addWidget(label(QStringLiteral("This module is wired into the shell."), "CardTitle", status));
+    statusText->addWidget(label(
+        QStringLiteral("Its provider is the next implementation step. Until then the page reports "
+                       "the work as planned instead of showing sample data."),
+        "CardBody",
+        status));
+    statusLayout->addLayout(statusText, 1);
+    contentLayout->addWidget(status);
     contentLayout->addStretch();
+
     scroll->setWidget(content);
     outer->addWidget(scroll, 1);
 }

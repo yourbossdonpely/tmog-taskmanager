@@ -29,7 +29,7 @@ provider sets. See [DESIGN.md](DESIGN.md).
 labels/milestones ready for work.
 
 - [x] Research the reference repository and official product.
-- [x] Capture the twelve destinations, UI patterns and platform constraints.
+- [x] Capture the reference destinations, UI patterns and platform constraints.
 - [x] Choose the stack and record alternatives.
 - [x] Write README, MIT licence, third-party notice.
 - [x] Write research, design and implementation plan.
@@ -53,7 +53,8 @@ persists settings.
 - [x] `src/ui/MainWindow`: left rail, destination stack, status bar, exact window title.
 - [x] `src/ui/theme`: token model and Light/Dark/Green/Amber/Blue/Mono themes.
 - [x] `src/core/settings`: versioned JSON, atomic save, portable mode detection.
-- [x] Placeholder pages for all twelve destinations, each with a title and empty state.
+- [x] Free destination pages for all fifteen owner-specified entries, with the shared
+  measured header and module layout.
 - [x] Command palette shell (Ctrl/Cmd+K) and keyboard navigation.
 - [x] Native application menu (About, Settings, Quit, Copy, Refresh, Help).
 - [ ] Local rotating log with redaction defaults.
@@ -163,13 +164,13 @@ denied operations produce a specific message and leave state unchanged.
 
 ## Phase 5 — Depth tools and Flight Recorder
 
-**Deliverable:** Connections, Installed Apps, Disk Space, Benchmarks and replay.
+**Deliverable:** Connections, Installed Apps, Deep Space, Benchmarks and replay.
 
 - [ ] Connections: TCP/UDP endpoints, state, owning process, exposure summary; no payload
   capture.
 - [ ] Installed Apps: inventory with size where available, uninstall entry point with
   confirmation.
-- [ ] Disk Space: scan a chosen root, largest folders/files, treemap or bar view, cancel and
+- [ ] Deep Space: scan a chosen root, largest folders/files, treemap or bar view, cancel and
   resume, scan history.
 - [ ] Benchmarks: CPU, memory, disk and GPU microbenchmarks; local only; no upload; results
   stored locally; clear methodology text.
@@ -232,7 +233,7 @@ notices verified; owner approves publication.
 2. Install Qt 6.12 locally into `.tools/Qt` and verify a Windows build.
 3. Add the CI matrix and get a green build on all three runners.
 4. Build the theme and navigation shell, then the settings store.
-5. Add the twelve placeholder destinations and the command palette shell.
+5. Add the fifteen free destinations and the command palette shell.
 
 ## Release checklist (every version)
 

@@ -60,6 +60,10 @@ qt_add_executable(TaskManagerOG
     src/ui/destination_page.h
     src/ui/history_chart.cpp
     src/ui/history_chart.h
+    src/ui/icons.cpp
+    src/ui/icons.h
+    src/ui/nav_delegate.cpp
+    src/ui/nav_delegate.h
     src/ui/performance_page.cpp
     src/ui/performance_page.h
     src/ui/reading_style.h
