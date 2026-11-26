@@ -164,7 +164,10 @@ jobs:
           sudo apt-get install -y \
             libgl1-mesa-dev libxkbcommon-x11-0 libxcb-cursor0 \
             libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-render-util0 \
-            libxcb-xinerama0 libxcb-xkb1 libfuse2 patchelf rpm zsync
+            libxcb-xinerama0 libxcb-xkb1 libxcb-shape0 libxcb-shm0 \
+            libxcb-sync1 libxcb-randr0 libxcb-render0 libxcb-glx0 \
+            libxcb-present0 libxcb-dri2-0 libxcb-dri3-0 libxcb-xfixes0 \
+            libxcb-util1 libfuse2 patchelf rpm zsync
 
       - name: Cache Qt 6.12.1
         uses: actions/cache@v4

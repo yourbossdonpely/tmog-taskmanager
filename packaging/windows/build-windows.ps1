@@ -100,7 +100,7 @@ if ($LASTEXITCODE -ne 0) { throw "WiX candle failed for the product" }
     -out "$work\" (Join-Path $work "AppFiles.wxs")
 if ($LASTEXITCODE -ne 0) { throw "WiX candle failed for the files" }
 $msi = Join-Path $dist "TaskManagerOG-$version-windows-x64.msi"
-& $light -out $msi (Join-Path $work "TaskManagerOG.wixobj") (Join-Path $work "AppFiles.wixobj")
+& $light -arch x64 -out $msi (Join-Path $work "TaskManagerOG.wixobj") (Join-Path $work "AppFiles.wixobj")
 if ($LASTEXITCODE -ne 0) { throw "WiX light failed" }
 
 Sign-File (Join-Path $dist "TaskManagerOG-$version-windows-x64-setup.exe")
