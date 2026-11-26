@@ -1,6 +1,6 @@
 # Task Manager OG by Don PELY
 
-[![CI](https://github.com/yourbossdonpely/task-manager-og/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/yourbossdonpely/task-manager-og/actions/workflows/ci.yml)
+[![CI](https://github.com/yourbossdonpely/tmog-taskmanager/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/yourbossdonpely/tmog-taskmanager/actions/workflows/ci.yml)
 
 **A native, privacy-first task manager for Windows, macOS and Linux.**
 

@@ -282,7 +282,7 @@ void MainWindow::buildMenus()
 
     auto *helpMenu = menuBar()->addMenu(QStringLiteral("&Help"));
     addMenuAction(helpMenu, QStringLiteral("Project on GitHub"), {}, this, []() {
-        QDesktopServices::openUrl(QUrl(QStringLiteral("https://github.com/yourbossdonpely/task-manager-og")));
+        QDesktopServices::openUrl(QUrl(QStringLiteral("https://github.com/yourbossdonpely/tmog-taskmanager")));
     });
     addMenuAction(helpMenu, QStringLiteral("About Qt"), {}, qApp, []() {
         QMessageBox::aboutQt(qApp->activeWindow());
