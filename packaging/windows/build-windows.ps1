@@ -88,6 +88,11 @@ $light = Find-Tool "light.exe" $wixBase
 & $heat dir $installerStage -cg AppFiles -gg -scom -sreg -sfrag -srd `
     -dr INSTALLDIR -var var.SourceDir -out (Join-Path $work "AppFiles.wxs")
 if ($LASTEXITCODE -ne 0) { throw "WiX heat failed" }
+# heat emits 32-bit components even though this package targets Program Files.
+# Mark every harvested component as 64-bit so ICE80 does not misclassify it.
+$appFiles = Get-Content (Join-Path $work "AppFiles.wxs") -Raw
+$appFiles = $appFiles -replace '<Component ', '<Component Win64="yes" '
+Set-Content (Join-Path $work "AppFiles.wxs") $appFiles -NoNewline
 & $candle -dSourceDir="$installerStage" -dProductVersion="$version" `
     -out "$work\" (Join-Path $root "packaging\windows\TaskManagerOG.wxs")
 if ($LASTEXITCODE -ne 0) { throw "WiX candle failed for the product" }
