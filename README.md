@@ -143,9 +143,10 @@ ctest --test-dir build -C Release --output-on-failure
 Verified locally on Windows with MSVC 2022 and Qt 6.12.1. CI builds Windows, macOS and
 Linux against the same official Qt 6.12.1 archives: it reads `Updates.xml`, verifies the
 archive SHA-1 files and extracts `qtbase` directly, because the unattended Qt installer
-cannot resolve the 6.11+ repository layout. Packaging commands are added in the packaging
-milestone. Qt is used under the LGPLv3 and is dynamically linked; see
-[NOTICE](docs/NOTICE.md).
+cannot resolve the 6.11+ repository layout. Packaging is implemented in `packaging/` and
+driven by `.github/workflows/release.yml`; see the [release runbook](docs/RELEASING.md)
+for exact commands, prerequisites, signing limits and verification. Qt is used under the
+LGPLv3 and is dynamically linked; see [NOTICE](docs/NOTICE.md).
 
 ## Command line
 
@@ -157,12 +158,24 @@ tmog-cli --version
 
 The planned `--snapshot` and `--self-test` commands will use the same measurement core.
 
+## Repository map
+
+- `src/core/` — settings, measurement providers, availability states and parsers.
+- `src/ui/` — Qt shell, measured Summary/Performance layouts, themes, icons and pages.
+- `tests/` — unit tests for settings, themes, parsing and version identity.
+- `packaging/` — Windows Inno/WiX, macOS DMG and Linux package recipes.
+- `.github/workflows/ci.yml` — three-platform build/test matrix.
+- `.github/workflows/release.yml` — tag-driven packaging and publishing.
+- `docs/` — reference research, measured UI spec, design, plan and release runbook.
+- `build/`, `dist/` — ignored local build and package output.
+
 ## Documentation
 
 - [Research: the reference application and what we learned](docs/RESEARCH.md)
 - [UI specification and reference measurements](docs/UI_SPEC.md)
 - [Product and technical design](docs/DESIGN.md)
 - [Implementation plan and release checklist](docs/PLAN.md)
+- [Release runbook: packaging, signing and publishing](docs/RELEASING.md)
 
 ## Credits and trademarks
 

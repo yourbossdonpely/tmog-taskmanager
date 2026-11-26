@@ -368,18 +368,29 @@ go to a `data/` directory beside it. This is opt-in and documented.
 
 ### Artifacts
 
+The `v0.1.0` pipeline publishes exactly fifteen assets:
+
 ```
 TaskManagerOG-<version>-windows-x64-setup.exe
-TaskManagerOG-<version>-windows-arm64-setup.exe
+TaskManagerOG-<version>-windows-x64.msi
 TaskManagerOG-<version>-windows-x64-portable.zip
 TaskManagerOG-<version>-macos-universal.dmg
+TaskManagerOG-<version>-macos-universal-portable.zip
 TaskManagerOG-<version>-linux-x86_64.AppImage
 TaskManagerOG-<version>-linux-amd64.deb
+TaskManagerOG-<version>-linux-x86_64.rpm
 TaskManagerOG-<version>-linux-x86_64.tar.gz
+TaskManagerOG-<version>-windows-selfsigned.cer
+TaskManagerOG-<version>-linux-signing-key.asc
 SHA256SUMS.txt
+SHA256SUMS.txt.asc
+latest.json
+latest.json.asc
 ```
 
-ARM64 Linux artifacts are added once the CI runner and Qt packages are proven.
+Windows and Linux are x64 in this release. macOS is universal. ARM64 builds and trusted
+notarization remain future work. The exact commands and verification steps are in the
+[release runbook](RELEASING.md).
 
 ### Installer requirements (exact product name everywhere)
 
@@ -391,13 +402,15 @@ ARM64 Linux artifacts are added once the CI runner and Qt packages are proven.
 - **macOS:** `Task Manager OG by Don PELY.app` in a DMG with an Applications shortcut.
   `CFBundleDisplayName` is the full name; `CFBundleName` is the shorter `Task Manager OG`
   because macOS truncates the app menu, and the About panel plus window title show the full
-  name. Drag-to-Applications layout. Signed and notarized when credentials exist.
+  name. Drag-to-Applications layout. The current prerelease is ad-hoc signed; trusted
+  Developer ID signing and notarization are future work.
 - **Linux:** `.desktop` `Name=Task Manager OG by Don PELY`, `Comment=Native system monitor`,
-  `Exec=task-manager-og`, `Icon=task-manager-og`. AppImage and `.deb` install the desktop
-  entry and icon. Category `System;Monitor;`.
+  `Exec=TaskManagerOG`, `Icon=task-manager-og`. The AppImage, `.deb` and `.rpm` install the
+  desktop entry and icon; packages use a launcher under `/opt/task-manager-og`. Category
+  `System;Monitor;`.
 
-The exact name is a release-blocking check in CI: the installer metadata and the running
-window title are asserted in a packaging test.
+The release workflow verifies the asset count and checksums before publishing. The
+product name is also asserted by the build/test identity check.
 
 ### Versioning
 
@@ -411,20 +424,25 @@ window title are asserted in a packaging test.
 
 - `ci.yml`: matrix Windows/macOS/Ubuntu, configure, build, run unit tests, upload a short
   log on failure.
-- `release.yml`: on tag `v*`, build release artifacts, generate checksums and an SBOM,
-  create a **draft** GitHub Release, and attach artifacts. Publishing the draft is a manual,
-  owner-approved step.
-- Optional signing jobs run only when the relevant secrets exist; otherwise the release notes
-  state that the build is unsigned.
-- No release is published without the checksum file and the licence/third-party notices.
+- `release.yml`: on tag `v*`, build Windows, macOS and Linux packages, generate checksums
+  and `latest.json`, verify exactly fifteen assets, then create and publish the GitHub
+  Release as a prerelease (or stable from a non-prerelease tag policy). Manual
+  `workflow_dispatch` runs build and upload artifacts without publishing.
+- Windows artifacts are self-signed with a generated certificate; the public `.cer` ships in
+  the release. macOS artifacts are ad-hoc signed and not notarized. Linux checksums and the
+  manifest are GPG-signed with a generated key; the public key ships in the release.
+- These signatures establish integrity against published keys, not public-CA identity.
+- No release is published without the checksum file, manifest and licence/third-party
+  notices. See [RELEASING.md](RELEASING.md) for the exact operational steps.
 
-### Signing prerequisites (owner action later)
+### Trusted signing prerequisites (owner action later)
 
 - Windows: Authenticode code-signing certificate (OV or EV) and a timestamp service.
 - macOS: Apple Developer Program membership, Developer ID Application certificate,
   notarization credentials (`notarytool`).
-- These are secrets, never committed. The pipeline must build unsigned successfully without
-  them.
+- Linux: a stable GPG release key controlled by the owner.
+- These are secrets, never committed. The current pipeline works without them by using
+  self-signed/ad-hoc keys and labels the signatures honestly.
 
 ## 7. Testing
 

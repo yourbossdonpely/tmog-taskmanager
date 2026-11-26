@@ -6,7 +6,10 @@ Windows, macOS and Linux, with signed/unsigned release artifacts and a repeatabl
 **Architecture:** C++20 measurement core + Qt 6 Widgets shell, one codebase, three platform
 provider sets. See [DESIGN.md](DESIGN.md).
 
-**Status:** Phase 0 (repository and planning) is landing. No application code yet.
+**Status:** `v0.1.0` prerelease shipped with Windows, universal macOS and Linux packages.
+The foundation shell and live CPU, memory, storage, network and process-pressure providers
+are implemented; several destination providers remain module shells. See
+[RELEASING.md](RELEASING.md) for the current release contract and limitations.
 
 ## Global constraints
 
@@ -19,7 +22,8 @@ provider sets. See [DESIGN.md](DESIGN.md).
 - Every metric carries an explicit availability state; missing data is never zero.
 - Every process action validates PID + creation identity.
 - No upstream code, artwork, fonts or screenshots are committed.
-- Releases are tag-driven; publishing a GitHub Release is a manual approval step.
+- Releases are tag-driven; the publish job runs only after all packaging jobs and the
+  fifteen-asset verification pass.
 
 ---
 
@@ -189,22 +193,25 @@ or user names by default.
 
 ## Phase 6 — Packaging and release pipeline
 
-**Deliverable:** installable artifacts for all three platforms and a draft GitHub Release.
+**Deliverable:** installable artifacts for all three platforms and a published prerelease.
 
-- [ ] Windows: Inno Setup script, app manifest, icon, portable ZIP, uninstall entry.
-- [ ] macOS: `.app` bundle, `Info.plist`, DMG layout, hardened runtime entitlements.
-- [ ] Linux: `.desktop`, AppImage recipe, `.deb` metadata, `.tar.gz`.
-- [ ] Exact product name asserted in installer metadata and window title.
-- [ ] `release.yml`: tag `v*` builds all artifacts, generates `SHA256SUMS.txt` and SBOM,
-  creates a draft release.
-- [ ] Signing hooks: optional Windows Authenticode, macOS Developer ID + notarization.
-- [ ] Release notes template with platform versions, checksums, known limitations.
-- [ ] Unsigned-build labelling and Gatekeeper/SmartScreen instructions.
-- [ ] Third-party notices and Qt LGPL text included in every package.
-- [ ] Install/uninstall smoke tests on clean VMs.
+- [x] Windows: Inno Setup setup EXE, WiX MSI, portable ZIP and uninstall entry.
+- [x] macOS: `.app` bundle, `Info.plist`, DMG layout and portable ZIP.
+- [x] Linux: `.desktop`, AppImage, `.deb`, `.rpm` and portable `.tar.gz`.
+- [x] Exact product name asserted in the build and installer metadata.
+- [x] `release.yml`: tag `v*` builds all artifacts, generates `SHA256SUMS.txt` and a signed
+  `latest.json`, verifies fifteen assets, and publishes the GitHub Release.
+- [x] Local signing: generated Windows self-signed certificate, macOS ad-hoc signature, and
+  generated GPG key for checksums/manifest.
+- [x] Release notes template with platform versions, checksums and known limitations.
+- [x] Signature-status labelling and Gatekeeper/SmartScreen guidance.
+- [x] Third-party notices and Qt LGPL text included in every package.
+- [ ] Trusted Windows Authenticode, Developer ID notarization and stable GPG key.
+- [ ] Install/uninstall smoke tests on clean VMs and Linux desktops.
 
-**Acceptance:** a tagged pre-release installs and uninstalls cleanly on Windows 11, macOS 14+
-and Ubuntu 22.04+; artifacts and checksums match; no signing secret is required to build.
+**Acceptance:** `v0.1.0` was published with all fifteen assets and verified checksums; the
+MSI administrative install and Windows portable build were exercised locally. Clean-VM
+install/uninstall coverage and trusted signing remain follow-up work.
 
 ---
 
