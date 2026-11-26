@@ -8,13 +8,18 @@ Task Manager OG by Don PELY is a ground-up, MIT-licensed re-envisioning of the c
 Task Manager OG idea: one precise instrument that shows what the machine is doing, which
 process is responsible, and why it feels slow.
 
-> **Status: pre-alpha.** The application shell builds and passes CI on Windows, macOS and
-> Linux; the measurement providers and the first installable release are still in progress.
-> Nothing here is installable yet.
+> **Status: pre-alpha.** Live CPU, memory, storage and network readings build and pass CI on
+> Windows, macOS and Linux. The remaining destination providers, installers and the first
+> tagged release are still in progress. Nothing here is installable yet.
 
-![Task Manager OG by Don PELY foundation shell](docs/preview-shell.png)
+![Task Manager OG by Don PELY Summary](docs/preview-shell.png)
 
-*Foundation shell, Windows build. Measurements are intentionally not connected yet.*
+*Summary on Windows: real readings, provider state, and capacity meters. Sampled at 250 ms
+for a fuller picture in the screenshot.*
+
+![Task Manager OG by Don PELY Performance](docs/preview-performance.png)
+
+*Performance history. A missing sample becomes a gap in the trace, never a zero.*
 
 ---
 
@@ -41,10 +46,24 @@ This project follows four rules:
 | Processes | Users | | | |
 | | Services | | | |
 
-Planned capabilities include live CPU, memory, disk, network, GPU, energy and thermal
-measurement; a sortable and filterable process tree; identity-safe process actions; startup,
-user and service management; socket inspection; installed-app and disk-space analysis;
-benchmarks; and a free, documented Flight Recorder for replaying a slowdown.
+Live CPU, memory, storage and network readings are implemented on all three platforms.
+Still planned: per-processor detail, GPU, energy and thermal measurement; a sortable and
+filterable process tree; identity-safe process actions; startup, user and service management;
+socket inspection; installed-app and disk-space analysis; benchmarks; and a free, documented
+Flight Recorder for replaying a slowdown.
+
+## Measurement sources
+
+| Reading | Windows | macOS | Linux |
+| --- | --- | --- | --- |
+| CPU | `GetSystemTimes` deltas | `host_statistics(HOST_CPU_LOAD_INFO)` deltas | `/proc/stat` deltas |
+| Memory | `GlobalMemoryStatusEx` | `hw.memsize` + `host_statistics64` (active, wired and compressed) | `/proc/meminfo` (total − `MemAvailable`) |
+| Storage | `GetDiskFreeSpaceEx` for the system volume | `statvfs("/")` | `statvfs("/")` |
+| Network | `GetIfTable2`, non-loopback totals | `sysctl NET_RT_IFLIST2`, non-loopback totals | `/proc/net/dev`, non-loopback totals |
+
+Rates are computed from two samples. The first sample is marked `SAMPLING`; a counter reset
+produces `UNAVAILABLE` with the reason and a gap in history. Memory and storage values are
+system-wide; network rates are summed across non-loopback interfaces.
 
 ## Design principles
 

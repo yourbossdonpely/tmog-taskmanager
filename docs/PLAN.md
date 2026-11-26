@@ -74,16 +74,18 @@ restart; `--version` prints the version.
 
 ### Core
 
-- [ ] `Metric<T>`, `Availability`, `Snapshot`, `HistoryRing`, `RateTracker`.
-- [ ] `Sampler` worker with cadence control and generation counter.
-- [ ] Fixture filesystem abstraction so parsers can be tested against fake `/proc`/`sys`.
-- [ ] Provider registry and health reporting.
-- [ ] Unit tests for availability propagation, gaps, counter wrap, zero-delta guards.
+- [x] `Reading`, `Availability`, `MetricsSnapshot` and counter-rate math.
+- [x] Sampler with configurable cadence; worker generation counter still to come.
+- [x] Pure `/proc/stat`, `/proc/meminfo` and `/proc/net/dev` parsers with fixture-based tests.
+- [ ] Provider registry and full health report.
+- [x] Unit tests for availability, first-sample state, zero-delta guards, counter reset and a live sampler.
 
 ### Providers (all three platforms)
 
-- [ ] CPU package + per-logical-processor utilisation and frequency.
-- [ ] Memory total/used/available/cached/buffers/swap.
+- [x] System-wide CPU utilisation deltas.
+- [ ] CPU per-logical-processor utilisation and frequency.
+- [x] Memory total/used/available.
+- [ ] Memory cached/buffers/swap composition.
 - [ ] Process enumeration: PID, PPID, name, user, status, CPU time, memory, threads,
   start time, architecture, command line.
 - [ ] Process tree and sorting/filtering model.
@@ -91,10 +93,14 @@ restart; `--version` prints the version.
 
 ### UI
 
-- [ ] Summary: LED gauges, dual-axis CPU graph, top processes, memory card, mini panels.
+- [x] Summary: live CPU, memory, storage and network cards with explicit provider states.
+- [ ] Summary: top processes and mini panels.
+- [x] Performance: CPU, memory, network history and storage capacity with gaps for missing samples.
+- [ ] Performance: per-subsystem selectors, per-processor detail and dual-axis CPU graph.
 - [ ] Processes: grouped tree, expand/collapse, filter, sort, selection by identity,
   detail strip, copy.
-- [ ] Status bar with provider health, process count, generation, sample age.
+- [x] Status bar with provider health and sampling cadence.
+- [ ] Status bar process count, generation and sample age.
 - [ ] Process actions: end, force kill, suspend/resume, priority; confirmation and errors.
 - [ ] Action audit log and identity re-validation.
 

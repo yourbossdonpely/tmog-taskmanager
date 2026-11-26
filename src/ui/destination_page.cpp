@@ -30,6 +30,12 @@ void SegmentBar::setValue(double value)
     update();
 }
 
+void SegmentBar::setReadingAvailable(bool available)
+{
+    m_available = available;
+    update();
+}
+
 QSize SegmentBar::sizeHint() const
 {
     return {220, 20};
@@ -50,7 +56,7 @@ void SegmentBar::paintEvent(QPaintEvent *)
         const int x = index * (width + gap);
         const QRectF segment(x, (this->height() - height) / 2.0, width, height);
         QColor color = m_accent;
-        color.setAlpha(index < litCount ? 235 : 38);
+        color.setAlpha(index < litCount ? 235 : (m_available ? 38 : 16));
         painter.setPen(Qt::NoPen);
         painter.setBrush(color);
         painter.drawRoundedRect(segment, 2, 2);

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "core/metrics.h"
+
 #include <QColor>
 #include <QMainWindow>
 #include <QString>
@@ -11,12 +13,16 @@ class QLabel;
 class QListWidget;
 class QMenu;
 class QStackedWidget;
+class QTimer;
 
 namespace tmog {
 class Settings;
 }
 
 namespace tmog::ui {
+
+class PerformancePage;
+class SummaryPage;
 
 struct Destination
 {
@@ -43,6 +49,8 @@ private:
     void buildStatusBar();
     void buildPages();
 
+    void sampleNow();
+    void updateProviderStatus(const MetricsSnapshot &snapshot);
     void navigateTo(int destinationIndex);
     void openPalette();
     void openSettings();
@@ -58,8 +66,15 @@ private:
     QActionGroup *m_scaleGroup = nullptr;
     QLabel *m_statusLeft = nullptr;
     QLabel *m_statusRight = nullptr;
+    SummaryPage *m_summaryPage = nullptr;
+    PerformancePage *m_performancePage = nullptr;
+    MetricsSampler m_sampler;
+    MetricsSnapshot m_lastSnapshot;
+    QTimer *m_sampleTimer = nullptr;
     QString m_themeId;
     int m_textScale = 100;
+    int m_refreshMs = 1000;
+    bool m_hasSnapshot = false;
 };
 
 } // namespace tmog::ui

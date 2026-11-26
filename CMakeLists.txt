@@ -20,9 +20,25 @@ add_library(tmog_core STATIC
     src/core/settings.cpp
     src/core/settings.h
     src/core/version.h
+    src/core/metrics.cpp
+    src/core/metrics.h
+    src/core/metrics_parse.cpp
+    src/core/metrics_parse.h
+    src/core/metrics_internal.h
 )
+
 target_include_directories(tmog_core PUBLIC src)
 target_link_libraries(tmog_core PUBLIC Qt6::Core)
+
+if(WIN32)
+    target_sources(tmog_core PRIVATE src/core/metrics_win.cpp)
+    target_compile_definitions(tmog_core PRIVATE _WIN32_WINNT=0x0601)
+    target_link_libraries(tmog_core PRIVATE iphlpapi)
+elseif(APPLE)
+    target_sources(tmog_core PRIVATE src/core/metrics_mac.cpp)
+elseif(UNIX)
+    target_sources(tmog_core PRIVATE src/core/metrics_linux.cpp)
+endif()
 target_compile_definitions(tmog_core PUBLIC
     TMOG_VERSION="${PROJECT_VERSION}"
     TMOG_PRODUCT_NAME="Task Manager OG by Don PELY"
@@ -42,7 +58,14 @@ qt_add_executable(TaskManagerOG
     src/ui/command_palette.h
     src/ui/destination_page.cpp
     src/ui/destination_page.h
+    src/ui/history_chart.cpp
+    src/ui/history_chart.h
+    src/ui/performance_page.cpp
+    src/ui/performance_page.h
+    src/ui/reading_style.h
     src/ui/settings_dialog.cpp
+    src/ui/summary_page.cpp
+    src/ui/summary_page.h
     src/ui/settings_dialog.h
     src/ui/theme.cpp
     src/ui/theme.h

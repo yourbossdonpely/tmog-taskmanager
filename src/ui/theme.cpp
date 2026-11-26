@@ -120,6 +120,8 @@ QString styleSheet(const ThemeTokens &theme, int textScalePercent)
     const int tiny = scaled(10, textScalePercent);
     const int heading = scaled(26, textScalePercent);
     const int subheading = scaled(15, textScalePercent);
+    const int metric = scaled(28, textScalePercent);
+    const int metricCompact = scaled(18, textScalePercent);
     const QString selection = rgba(theme.accent, theme.dark ? 0.26 : 0.16);
     const QString hover = rgba(theme.accent, theme.dark ? 0.12 : 0.08);
     const QString card = rgba(theme.panelRaised, theme.dark ? 0.55 : 0.75);
@@ -317,6 +319,31 @@ QString styleSheet(const ThemeTokens &theme, int textScalePercent)
             font-size: @subheadingpx;
             font-weight: 600;
         }
+        #MetricValue {
+            color: @text;
+            font-family: "Cascadia Mono", "IBM Plex Mono", "Consolas", monospace;
+            font-size: @metricpx;
+            font-weight: 600;
+        }
+        #MetricValueCompact {
+            color: @text;
+            font-family: "Cascadia Mono", "IBM Plex Mono", "Consolas", monospace;
+            font-size: @compactpx;
+            font-weight: 600;
+        }
+        #MetricDetail {
+            color: @textMuted;
+            font-size: @smallpx;
+        }
+        #MetricState {
+            font-family: "Cascadia Mono", "IBM Plex Mono", "Consolas", monospace;
+            font-size: @tinypx;
+            font-weight: 600;
+        }
+        #ChartLegend {
+            color: @textMuted;
+            font-size: @tinypx;
+        }
         QStatusBar {
             background: @panel;
             color: @textMuted;
@@ -370,6 +397,8 @@ QString styleSheet(const ThemeTokens &theme, int textScalePercent)
     sheet.replace(QStringLiteral("@tinypx"), QStringLiteral("%1px").arg(tiny));
     sheet.replace(QStringLiteral("@headingpx"), QStringLiteral("%1px").arg(heading));
     sheet.replace(QStringLiteral("@subheadingpx"), QStringLiteral("%1px").arg(subheading));
+    sheet.replace(QStringLiteral("@metricpx"), QStringLiteral("%1px").arg(metric));
+    sheet.replace(QStringLiteral("@compactpx"), QStringLiteral("%1px").arg(metricCompact));
     return sheet;
 }
 

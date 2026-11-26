@@ -118,7 +118,7 @@ int main(int argc, char **argv)
     if (parser.isSet(screenshotOption)) {
         const QString path = QFileInfo(parser.value(screenshotOption)).absoluteFilePath();
         QDir().mkpath(QFileInfo(path).absolutePath());
-        QTimer::singleShot(600, &app, [&window, path]() {
+        QTimer::singleShot(1600, &app, [&window, path]() {
             window.grab().save(path, "PNG");
             QCoreApplication::quit();
         });

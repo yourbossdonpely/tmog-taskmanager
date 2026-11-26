@@ -16,6 +16,7 @@ public:
 
     void setAccent(const QColor &color);
     void setValue(double value);
+    void setReadingAvailable(bool available);
 
     QSize sizeHint() const override;
 
@@ -25,6 +26,7 @@ protected:
 private:
     QColor m_accent;
     double m_value = 0.0;
+    bool m_available = true;
 };
 
 class DestinationPage : public QWidget

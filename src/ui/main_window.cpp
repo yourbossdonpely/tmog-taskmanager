@@ -4,7 +4,10 @@
 #include "core/version.h"
 #include "ui/command_palette.h"
 #include "ui/destination_page.h"
+#include "ui/performance_page.h"
+#include "ui/reading_style.h"
 #include "ui/settings_dialog.h"
+#include "ui/summary_page.h"
 #include "ui/theme.h"
 
 #include <QAction>
@@ -26,6 +29,7 @@
 #include <QStackedWidget>
 #include <QStatusBar>
 #include <QStringList>
+#include <QTimer>
 #include <QUrl>
 #include <QVBoxLayout>
 
@@ -63,6 +67,13 @@ MainWindow::MainWindow(Settings &settings, QWidget *parent)
     m_themeId = m_settings.getString(QStringLiteral("appearance/theme"), QStringLiteral("dark"));
     m_textScale = qBound(100, m_settings.getInt(QStringLiteral("appearance/text_scale"), 100), 200);
     applyAppearance(m_themeId, m_textScale);
+
+    m_refreshMs = qBound(250, m_settings.getInt(QStringLiteral("sampling/refresh_ms"), 1000), 10000);
+    m_sampleTimer = new QTimer(this);
+    m_sampleTimer->setInterval(m_refreshMs);
+    connect(m_sampleTimer, &QTimer::timeout, this, &MainWindow::sampleNow);
+    m_sampleTimer->start();
+    sampleNow();
 
     const QString saved = m_settings.getString(
         QStringLiteral("navigation/last_destination"), QStringLiteral("summary"));
@@ -227,12 +238,20 @@ void MainWindow::buildSidebar()
 void MainWindow::buildPages()
 {
     for (const auto &destination : m_destinations) {
-        m_pages->addWidget(new DestinationPage(destination.title,
-                                               destination.subtitle,
-                                               destination.note,
-                                               destination.accent,
-                                               destination.showcase,
-                                               m_pages));
+        if (destination.id == QStringLiteral("summary")) {
+            m_summaryPage = new SummaryPage(m_pages);
+            m_pages->addWidget(m_summaryPage);
+        } else if (destination.id == QStringLiteral("performance")) {
+            m_performancePage = new PerformancePage(m_pages);
+            m_pages->addWidget(m_performancePage);
+        } else {
+            m_pages->addWidget(new DestinationPage(destination.title,
+                                                   destination.subtitle,
+                                                   destination.note,
+                                                   destination.accent,
+                                                   destination.showcase,
+                                                   m_pages));
+        }
     }
 }
 
@@ -277,7 +296,8 @@ void MainWindow::buildMenus()
 
     viewMenu->addSeparator();
     addMenuAction(viewMenu, QStringLiteral("Refresh now"), QKeySequence::Refresh, this, [this]() {
-        statusBar()->showMessage(QStringLiteral("Waiting for measurement providers (v0.2)."), 2500);
+        sampleNow();
+        statusBar()->showMessage(QStringLiteral("Sampled now."), 1500);
     });
 
     auto *helpMenu = menuBar()->addMenu(QStringLiteral("&Help"));
@@ -291,10 +311,58 @@ void MainWindow::buildMenus()
 
 void MainWindow::buildStatusBar()
 {
-    m_statusLeft = new QLabel(QStringLiteral("Foundation build · providers not connected"), this);
+    m_statusLeft = new QLabel(QStringLiteral("Starting measurement providers…"), this);
     m_statusRight = new QLabel(tmog::versionLine(), this);
     statusBar()->addWidget(m_statusLeft, 1);
     statusBar()->addPermanentWidget(m_statusRight);
+}
+
+void MainWindow::sampleNow()
+{
+    if (!m_summaryPage || !m_performancePage) {
+        return;
+    }
+
+    m_lastSnapshot = m_sampler.sample();
+    m_hasSnapshot = true;
+    m_summaryPage->apply(m_lastSnapshot);
+    m_performancePage->apply(m_lastSnapshot);
+    updateProviderStatus(m_lastSnapshot);
+}
+
+void MainWindow::updateProviderStatus(const MetricsSnapshot &snapshot)
+{
+    if (!m_statusLeft) {
+        return;
+    }
+
+    const Reading network =
+        combineReadings(snapshot.networkDownPerSecond, snapshot.networkUpPerSecond);
+    const bool anyDenied = snapshot.cpuPercent.state == Availability::Denied
+        || snapshot.memoryPercent.state == Availability::Denied
+        || snapshot.storagePercent.state == Availability::Denied
+        || network.state == Availability::Denied;
+    const bool anyUnavailable = snapshot.cpuPercent.state == Availability::Unavailable
+        || snapshot.memoryPercent.state == Availability::Unavailable
+        || snapshot.storagePercent.state == Availability::Unavailable
+        || network.state == Availability::Unavailable;
+    const bool anyPending = snapshot.cpuPercent.state == Availability::Pending
+        || snapshot.memoryPercent.state == Availability::Pending
+        || snapshot.storagePercent.state == Availability::Pending
+        || network.state == Availability::Pending;
+
+    if (anyDenied) {
+        m_statusLeft->setText(QStringLiteral("Restricted · a provider was denied"));
+    } else if (anyUnavailable) {
+        m_statusLeft->setText(QStringLiteral("Degraded · one or more providers unavailable"));
+    } else if (anyPending) {
+        m_statusLeft->setText(QStringLiteral("Sampling · collecting first deltas"));
+    } else {
+        const QString cadence = m_refreshMs >= 1000 && m_refreshMs % 1000 == 0
+            ? QStringLiteral("%1 s").arg(m_refreshMs / 1000)
+            : QStringLiteral("%1 ms").arg(m_refreshMs);
+        m_statusLeft->setText(QStringLiteral("Live · %1 sampling").arg(cadence));
+    }
 }
 
 void MainWindow::navigateTo(int destinationIndex)
@@ -363,8 +431,19 @@ void MainWindow::applyAppearance(const QString &themeId, int textScalePercent)
     m_settings.set(QStringLiteral("appearance/text_scale"), m_textScale);
     m_settings.save();
 
+    const ThemeTokens &activeTheme = themeById(m_themeId);
+    if (m_summaryPage) {
+        m_summaryPage->setTheme(activeTheme);
+    }
+    if (m_performancePage) {
+        m_performancePage->setTheme(activeTheme);
+    }
     if (m_statusLeft) {
-        m_statusLeft->setText(QStringLiteral("Foundation build · providers not connected"));
+        if (m_hasSnapshot) {
+            updateProviderStatus(m_lastSnapshot);
+        } else {
+            m_statusLeft->setText(QStringLiteral("Starting measurement providers…"));
+        }
     }
     updateThemeChecks();
 }
