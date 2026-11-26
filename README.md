@@ -114,9 +114,10 @@ cmake --build build --config Release
 ctest --test-dir build -C Release --output-on-failure
 ```
 
-Verified locally on Windows with MSVC 2022 and Qt 6.12.1. The CI matrix builds
-Windows, macOS and Linux; it is pinned to Qt 6.10.3 until the unattended Qt installer
-understands the 6.11+ repository layout. Packaging commands are added in the packaging
+Verified locally on Windows with MSVC 2022 and Qt 6.12.1. CI builds Windows, macOS and
+Linux against the same official Qt 6.12.1 archives: it reads `Updates.xml`, verifies the
+archive SHA-1 files and extracts `qtbase` directly, because the unattended Qt installer
+cannot resolve the 6.11+ repository layout. Packaging commands are added in the packaging
 milestone. Qt is used under the LGPLv3 and is dynamically linked; see
 [NOTICE](docs/NOTICE.md).
 

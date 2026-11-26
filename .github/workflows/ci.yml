@@ -18,13 +18,16 @@ jobs:
         include:
           - name: Windows x64
             os: windows-latest
-            qt_arch: win64_msvc2022_64
+            qt_repo: windows_x86/desktop/qt6_6121/qt6_6121_msvc2022_64
+            qt_package: qt.qt6.6121.win64_msvc2022_64
           - name: macOS
             os: macos-latest
-            qt_arch: clang_64
+            qt_repo: mac_x64/desktop/qt6_6121/qt6_6121
+            qt_package: qt.qt6.6121.clang_64
           - name: Linux x64
             os: ubuntu-22.04
-            qt_arch: linux_gcc_64
+            qt_repo: linux_x64/desktop/qt6_6121/qt6_6121
+            qt_package: qt.qt6.6121.linux_gcc_64
 
     steps:
       - name: Check out
@@ -34,17 +37,49 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgl1-mesa-dev libxkbcommon-x11-0 libxcb-cursor0
+          sudo apt-get install -y libgl1-mesa-dev libxkbcommon-x11-0 libxcb-cursor0 p7zip-full
 
-      # aqt 3.3.0 does not yet understand the 6.11+ Qt repository layout.
-      # 6.10.3 is the newest version its unattended installer can fetch.
-      # Local development uses 6.12.1; the source has no 6.12-only APIs.
-      - name: Install Qt
-        uses: jurplel/install-qt-action@v4
+      - name: Ensure 7-Zip (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          if ! command -v 7z >/dev/null 2>&1 && ! command -v 7zz >/dev/null 2>&1; then
+            brew install sevenzip
+          fi
+
+      - name: Cache Qt 6.12.1
+        uses: actions/cache@v4
         with:
-          version: '6.10.3'
-          arch: ${{ matrix.qt_arch }}
-          cache: true
+          path: ${{ runner.temp }}/qt-cache/6.12.1/${{ matrix.qt_package }}
+          key: qt-6.12.1-${{ runner.os }}-${{ matrix.qt_package }}-v1
+
+      # aqt/install-qt-action cannot resolve the 6.11+ repository layout.
+      # This reads the official Updates.xml, verifies each archive's .sha1
+      # and installs the same Qt 6.12.1 used for local builds.
+      - name: Install Qt 6.12.1 (official archives)
+        shell: bash
+        env:
+          QT_REPO: ${{ matrix.qt_repo }}
+          QT_PACKAGE: ${{ matrix.qt_package }}
+        run: |
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            PYTHON=python
+          else
+            PYTHON=python3
+          fi
+          cache="$RUNNER_TEMP/qt-cache/6.12.1/$QT_PACKAGE"
+          prefix=$("$PYTHON" .github/scripts/install-qt.py \
+            --repo "$QT_REPO" \
+            --package "$QT_PACKAGE" \
+            --cache-dir "$cache")
+          echo "Using Qt 6.12.1 at $prefix"
+          echo "QT_ROOT_DIR=$prefix" >> "$GITHUB_ENV"
+          echo "$prefix/bin" >> "$GITHUB_PATH"
+          if [ "$RUNNER_OS" = "Linux" ]; then
+            echo "LD_LIBRARY_PATH=$prefix/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" >> "$GITHUB_ENV"
+          elif [ "$RUNNER_OS" = "macOS" ]; then
+            echo "DYLD_FRAMEWORK_PATH=$prefix/lib" >> "$GITHUB_ENV"
+            echo "DYLD_LIBRARY_PATH=$prefix/lib" >> "$GITHUB_ENV"
+          fi
 
       - name: Configure
         shell: bash
