@@ -33,9 +33,9 @@ labels/milestones ready for work.
 - [x] Choose the stack and record alternatives.
 - [x] Write README, MIT licence, third-party notice.
 - [x] Write research, design and implementation plan.
-- [ ] Create the public GitHub repository and push the initial commit.
-- [ ] Create milestones `v0.1` … `v1.0` and the initial issue set.
-- [ ] Protect `main`: require a pull request and a green CI check.
+- [x] Create the public GitHub repository and push the initial commit.
+- [x] Create milestones `v0.1` … `v1.0` and one tracked issue per phase.
+- [ ] Protect `main`: require a green CI check once the workflow exists.
 
 **Acceptance:** repository is public, MIT-labelled, renders the README correctly, and has no
 build artifacts or secrets committed.
