@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Windows x64
+            os: windows-latest
+            qt_arch: win64_msvc2022_64
+          - name: macOS
+            os: macos-latest
+            qt_arch: clang_64
+          - name: Linux x64
+            os: ubuntu-22.04
+            qt_arch: linux_gcc_64
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Install Linux GUI dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgl1-mesa-dev libxkbcommon-x11-0 libxcb-cursor0
+
+      # aqt 3.3.0 does not yet understand the 6.11+ Qt repository layout.
+      # 6.10.3 is the newest version its unattended installer can fetch.
+      # Local development uses 6.12.1; the source has no 6.12-only APIs.
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.10.3'
+          arch: ${{ matrix.qt_arch }}
+          cache: true
+
+      - name: Configure
+        shell: bash
+        run: cmake -S . -B build -DCMAKE_PREFIX_PATH="$QT_ROOT_DIR" -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        shell: bash
+        run: cmake --build build --config Release --parallel
+
+      - name: Test
+        shell: bash
+        run: ctest --test-dir build -C Release --output-on-failure
+
+      - name: Product identity and GUI smoke
+        shell: bash
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: |
+          binary=$(find build -type f \( -name TaskManagerOG -o -name TaskManagerOG.exe \) | head -n 1)
+          test -n "$binary"
+          "$binary" --version
+          "$binary" --smoke-gui

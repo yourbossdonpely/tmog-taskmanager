@@ -6,9 +6,13 @@ Task Manager OG by Don PELY is a ground-up, MIT-licensed re-envisioning of the c
 Task Manager OG idea: one precise instrument that shows what the machine is doing, which
 process is responsible, and why it feels slow.
 
-> **Status: pre-alpha.** The repository currently contains the research, product design and
-> implementation plan. The application scaffold and first release are in progress. Nothing
-> here is installable yet.
+> **Status: pre-alpha.** The application shell now builds on Windows; the measurement
+> providers and the first installable release are still in progress. Nothing here is
+> installable yet.
+
+![Task Manager OG by Don PELY foundation shell](docs/preview-shell.png)
+
+*Foundation shell, Windows build. Measurements are intentionally not connected yet.*
 
 ---
 
@@ -72,16 +76,28 @@ The application is built with CMake and Qt 6 Widgets. Planned minimums:
 
 - CMake 3.24+
 - A C++20 compiler (MSVC 2022, Clang 15+, or GCC 12+)
-- Qt 6.12 LTS (Widgets; dynamically linked)
+- Qt 6.10 or newer (Widgets; dynamically linked)
 
 ```bash
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=/path/to/Qt/6.x/gcc_64
 cmake --build build --config Release
-ctest --test-dir build --output-on-failure
+ctest --test-dir build -C Release --output-on-failure
 ```
 
-Exact per-platform prerequisites and packaging commands will be added with the scaffold.
-Qt is used under the LGPLv3 and is dynamically linked; see [NOTICE](docs/NOTICE.md).
+On Windows, use the Visual Studio 2022 generator and the matching MSVC Qt kit:
+
+```powershell
+cmake -S . -B build -G "Visual Studio 17 2022" -A x64 `
+  -DCMAKE_PREFIX_PATH=C:/Qt/6.12.1/msvc2022_64
+cmake --build build --config Release
+ctest --test-dir build -C Release --output-on-failure
+```
+
+Verified locally on Windows with MSVC 2022 and Qt 6.12.1. The CI matrix builds
+Windows, macOS and Linux; it is pinned to Qt 6.10.3 until the unattended Qt installer
+understands the 6.11+ repository layout. Packaging commands are added in the packaging
+milestone. Qt is used under the LGPLv3 and is dynamically linked; see
+[NOTICE](docs/NOTICE.md).
 
 ## Documentation
 
