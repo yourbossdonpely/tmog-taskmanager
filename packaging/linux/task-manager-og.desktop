@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Task Manager OG by Don PELY
+Comment=Native system monitor
+Exec=TaskManagerOG
+Icon=task-manager-og
+Terminal=false
+Categories=System;Monitor;
+StartupWMClass=TaskManagerOG

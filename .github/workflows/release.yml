@@ -1,0 +1,388 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to package (without the v prefix)"
+        required: true
+        default: "0.1.0"
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    name: Windows x64
+    runs-on: windows-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Resolve version
+        shell: bash
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            version="${{ inputs.version }}"
+          else
+            version="${GITHUB_REF_NAME#v}"
+          fi
+          echo "TMOG_VERSION=$version" >> "$GITHUB_ENV"
+
+      - name: Cache Qt 6.12.1
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/qt-cache/6.12.1/qt.qt6.6121.win64_msvc2022_64
+          key: qt-6.12.1-Windows-qt.qt6.6121.win64_msvc2022_64-v1
+
+      - name: Install Qt 6.12.1
+        shell: bash
+        env:
+          QT_REPO: windows_x86/desktop/qt6_6121/qt6_6121_msvc2022_64
+          QT_PACKAGE: qt.qt6.6121.win64_msvc2022_64
+        run: |
+          prefix=$(python .github/scripts/install-qt.py \
+            --repo "$QT_REPO" \
+            --package "$QT_PACKAGE" \
+            --cache-dir "$RUNNER_TEMP/qt-cache/6.12.1/$QT_PACKAGE")
+          echo "QT_ROOT_DIR=$prefix" >> "$GITHUB_ENV"
+          echo "$prefix/bin" >> "$GITHUB_PATH"
+
+      - name: Install packaging tools
+        shell: pwsh
+        run: |
+          choco install innosetup --no-progress -y
+          choco install wixtoolset --version=3.14.1 --no-progress -y
+
+      - name: Configure
+        shell: bash
+        run: cmake -S . -B build -DCMAKE_PREFIX_PATH="$QT_ROOT_DIR" -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build and test
+        shell: bash
+        run: |
+          cmake --build build --config Release --parallel
+          ctest --test-dir build -C Release --output-on-failure
+
+      - name: Package and self-sign
+        shell: pwsh
+        run: pwsh -NoProfile -File packaging/windows/build-windows.ps1
+
+      - name: Upload Windows assets
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-assets
+          path: dist/windows/*
+          if-no-files-found: error
+
+  macos:
+    name: macOS universal
+    runs-on: macos-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Resolve version
+        shell: bash
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            version="${{ inputs.version }}"
+          else
+            version="${GITHUB_REF_NAME#v}"
+          fi
+          echo "TMOG_VERSION=$version" >> "$GITHUB_ENV"
+
+      - name: Cache Qt 6.12.1
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/qt-cache/6.12.1/qt.qt6.6121.clang_64
+          key: qt-6.12.1-macOS-qt.qt6.6121.clang_64-v1
+
+      - name: Install Qt 6.12.1
+        shell: bash
+        env:
+          QT_REPO: mac_x64/desktop/qt6_6121/qt6_6121
+          QT_PACKAGE: qt.qt6.6121.clang_64
+        run: |
+          prefix=$(python3 .github/scripts/install-qt.py \
+            --repo "$QT_REPO" \
+            --package "$QT_PACKAGE" \
+            --cache-dir "$RUNNER_TEMP/qt-cache/6.12.1/$QT_PACKAGE")
+          echo "QT_ROOT_DIR=$prefix" >> "$GITHUB_ENV"
+          echo "$prefix/bin" >> "$GITHUB_PATH"
+          echo "DYLD_FRAMEWORK_PATH=$prefix/lib" >> "$GITHUB_ENV"
+
+      - name: Configure universal build
+        shell: bash
+        run: >
+          cmake -S . -B build
+          -DCMAKE_PREFIX_PATH="$QT_ROOT_DIR"
+          -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
+          -DCMAKE_OSX_DEPLOYMENT_TARGET=14.4
+
+      - name: Build and test
+        shell: bash
+        run: |
+          cmake --build build --config Release --parallel
+          ctest --test-dir build -C Release --output-on-failure
+
+      - name: Package and ad-hoc sign
+        shell: bash
+        run: bash packaging/macos/build-macos.sh
+
+      - name: Upload macOS assets
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-assets
+          path: dist/macos/*
+          if-no-files-found: error
+
+  linux:
+    name: Linux x64
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Resolve version
+        shell: bash
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            version="${{ inputs.version }}"
+          else
+            version="${GITHUB_REF_NAME#v}"
+          fi
+          echo "TMOG_VERSION=$version" >> "$GITHUB_ENV"
+
+      - name: Install native packaging dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libgl1-mesa-dev libxkbcommon-x11-0 libxcb-cursor0 \
+            libfuse2 patchelf rpm zsync
+
+      - name: Cache Qt 6.12.1
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/qt-cache/6.12.1/qt.qt6.6121.linux_gcc_64
+          key: qt-6.12.1-Linux-qt.qt6.6121.linux_gcc_64-v1
+
+      - name: Install Qt 6.12.1
+        shell: bash
+        env:
+          QT_REPO: linux_x64/desktop/qt6_6121/qt6_6121
+          QT_PACKAGE: qt.qt6.6121.linux_gcc_64
+        run: |
+          prefix=$(python3 .github/scripts/install-qt.py \
+            --repo "$QT_REPO" \
+            --package "$QT_PACKAGE" \
+            --cache-dir "$RUNNER_TEMP/qt-cache/6.12.1/$QT_PACKAGE")
+          echo "QT_ROOT_DIR=$prefix" >> "$GITHUB_ENV"
+          echo "$prefix/bin" >> "$GITHUB_PATH"
+          echo "LD_LIBRARY_PATH=$prefix/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" >> "$GITHUB_ENV"
+
+      - name: Configure
+        shell: bash
+        run: cmake -S . -B build -DCMAKE_PREFIX_PATH="$QT_ROOT_DIR" -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build and test
+        shell: bash
+        run: |
+          cmake --build build --config Release --parallel
+          ctest --test-dir build -C Release --output-on-failure
+
+      - name: Package
+        shell: bash
+        run: bash packaging/linux/build-linux.sh
+
+      - name: Upload Linux assets
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-assets
+          path: dist/linux/*
+          if-no-files-found: error
+
+  publish:
+    name: Sign and publish
+    if: github.event_name == 'push'
+    needs: [windows, macos, linux]
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Resolve release identity
+        shell: bash
+        run: |
+          echo "TAG=${GITHUB_REF_NAME}" >> "$GITHUB_ENV"
+          echo "TMOG_VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_ENV"
+
+      - name: Download all assets
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Verify base artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="$TMOG_VERSION"
+          expected=(
+            "TaskManagerOG-$version-windows-x64-setup.exe"
+            "TaskManagerOG-$version-windows-x64.msi"
+            "TaskManagerOG-$version-windows-x64-portable.zip"
+            "TaskManagerOG-$version-macos-universal.dmg"
+            "TaskManagerOG-$version-macos-universal-portable.zip"
+            "TaskManagerOG-$version-linux-x86_64.AppImage"
+            "TaskManagerOG-$version-linux-amd64.deb"
+            "TaskManagerOG-$version-linux-x86_64.rpm"
+            "TaskManagerOG-$version-linux-x86_64.tar.gz"
+          )
+          for name in "${expected[@]}"; do
+            test -s "dist/$name" || { echo "missing $name" >&2; exit 1; }
+          done
+          test -s "dist/TaskManagerOG-$version-windows-selfsigned.cer" || {
+            echo "missing Windows self-signed certificate" >&2
+            exit 1
+          }
+          file "dist/TaskManagerOG-$version-windows-x64-setup.exe"
+          file "dist/TaskManagerOG-$version-windows-x64.msi"
+          file "dist/TaskManagerOG-$version-macos-universal.dmg"
+          file "dist/TaskManagerOG-$version-linux-x86_64.AppImage"
+
+      - name: Create checksums and signing key
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd dist
+          sha256sum TaskManagerOG-* > SHA256SUMS.txt
+          gpg --batch --passphrase '' --quick-generate-key \
+            "Task Manager OG Release Signing <release@donpely.com>" rsa3072 sign 1y
+          key="$(gpg --list-secret-keys --with-colons | awk -F: '/^fpr:/{print $10; exit}')"
+          gpg --armor --export "$key" > "TaskManagerOG-$TMOG_VERSION-linux-signing-key.asc"
+          gpg --batch --yes --armor --detach-sign SHA256SUMS.txt
+
+      - name: Create signed release manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import os
+
+          version = os.environ["TMOG_VERSION"]
+          tag = os.environ["TAG"]
+          repo = os.environ["GITHUB_REPOSITORY"]
+          names = [
+              f"TaskManagerOG-{version}-windows-x64-setup.exe",
+              f"TaskManagerOG-{version}-windows-x64.msi",
+              f"TaskManagerOG-{version}-windows-x64-portable.zip",
+              f"TaskManagerOG-{version}-macos-universal.dmg",
+              f"TaskManagerOG-{version}-macos-universal-portable.zip",
+              f"TaskManagerOG-{version}-linux-x86_64.AppImage",
+              f"TaskManagerOG-{version}-linux-amd64.deb",
+              f"TaskManagerOG-{version}-linux-x86_64.rpm",
+              f"TaskManagerOG-{version}-linux-x86_64.tar.gz",
+              f"TaskManagerOG-{version}-windows-selfsigned.cer",
+          ]
+          assets = []
+          for name in names:
+              path = os.path.join("dist", name)
+              digest = hashlib.sha256()
+              with open(path, "rb") as handle:
+                  for block in iter(lambda: handle.read(1024 * 1024), b""):
+                      digest.update(block)
+              assets.append({
+                  "name": name,
+                  "size": os.path.getsize(path),
+                  "sha256": digest.hexdigest(),
+                  "url": f"https://github.com/{repo}/releases/download/{tag}/{name}",
+              })
+          manifest = {
+              "schema": 1,
+              "kind": "release-manifest",
+              "product": "Task Manager OG by Don PELY",
+              "version": version,
+              "tag": tag,
+              "channel": "prerelease",
+              "published_at": os.popen("date -u +%Y-%m-%dT%H:%M:%SZ").read().strip(),
+              "notes": "The app does not yet auto-update; this signed manifest is the future updater feed.",
+              "assets": assets,
+          }
+          with open("dist/latest.json", "w", encoding="utf-8") as handle:
+              json.dump(manifest, handle, indent=2, sort_keys=True)
+              handle.write("\n")
+          PY
+          gpg --batch --yes --armor --detach-sign dist/latest.json
+
+      - name: Verify fifteen release assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="$TMOG_VERSION"
+          expected=(
+            "TaskManagerOG-$version-windows-x64-setup.exe"
+            "TaskManagerOG-$version-windows-x64.msi"
+            "TaskManagerOG-$version-windows-x64-portable.zip"
+            "TaskManagerOG-$version-macos-universal.dmg"
+            "TaskManagerOG-$version-macos-universal-portable.zip"
+            "TaskManagerOG-$version-linux-x86_64.AppImage"
+            "TaskManagerOG-$version-linux-amd64.deb"
+            "TaskManagerOG-$version-linux-x86_64.rpm"
+            "TaskManagerOG-$version-linux-x86_64.tar.gz"
+            "TaskManagerOG-$version-windows-selfsigned.cer"
+            "TaskManagerOG-$version-linux-signing-key.asc"
+            "SHA256SUMS.txt"
+            "SHA256SUMS.txt.asc"
+            "latest.json"
+            "latest.json.asc"
+          )
+          for name in "${expected[@]}"; do
+            test -s "dist/$name" || { echo "missing $name" >&2; exit 1; }
+          done
+          test "$(find dist -maxdepth 1 -type f | wc -l)" -eq 15
+          (cd dist && sha256sum -c SHA256SUMS.txt)
+          gpg --verify dist/SHA256SUMS.txt.asc dist/SHA256SUMS.txt
+          gpg --verify dist/latest.json.asc dist/latest.json
+
+      - name: Publish prerelease
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          notes="$(mktemp)"
+          cat > "$notes" <<EOF
+          Task Manager OG by Don PELY $TAG, the first prerelease.
+
+          This build includes Windows setup EXE and MSI, a universal macOS DMG,
+          Linux AppImage, deb and RPM packages, and portable archives.
+
+          Signing status: Windows artifacts are self-signed with a generated
+          certificate included in the assets. The macOS app and DMG are ad-hoc
+          signed; they are not notarized because this project has no Apple
+          Developer ID. Linux checksums and the release manifest are signed with
+          the included generated public key. These signatures prove integrity
+          against the published key, not identity against a certificate authority.
+
+          The app does not yet auto-update. latest.json is a signed manifest for
+          future updater wiring, not a current update client.
+          EOF
+          if ! gh release view "$TAG" >/dev/null 2>&1; then
+            gh release create "$TAG" \
+              --title "Task Manager OG by Don PELY $TAG" \
+              --notes-file "$notes" \
+              --draft \
+              --prerelease \
+              --verify-tag
+          fi
+          gh release upload "$TAG" dist/* --clobber
+          count="$(gh release view "$TAG" --json assets --jq '.assets | length')"
+          test "$count" -eq 15 || { echo "expected 15 release assets, found $count" >&2; exit 1; }
+          gh release edit "$TAG" --draft=false --prerelease

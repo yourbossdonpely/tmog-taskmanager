@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Product Id="*"
+           Name="Task Manager OG by Don PELY"
+           Language="1033"
+           Version="$(var.ProductVersion)"
+           Manufacturer="Don PELY"
+           UpgradeCode="A2E5C6D1-4B3F-4A87-9D20-6C8B1F7E3A54">
+    <Package InstallerVersion="500"
+             Compressed="yes"
+             InstallScope="perMachine"
+             Description="Task Manager OG by Don PELY" />
+    <MajorUpgrade DowngradeErrorMessage="A newer version of Task Manager OG by Don PELY is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFiles64Folder">
+        <Directory Id="INSTALLDIR" Name="Task Manager OG by Don PELY" />
+      </Directory>
+      <Directory Id="ProgramMenuFolder">
+        <Directory Id="ApplicationProgramsFolder" Name="Task Manager OG by Don PELY" />
+      </Directory>
+    </Directory>
+
+    <Component Id="ApplicationShortcut"
+               Directory="ApplicationProgramsFolder"
+               Guid="E7C4B9A2-1D6F-4E83-8B05-2A9F7C6D1E43">
+      <Shortcut Id="ApplicationStartMenuShortcut"
+                Name="Task Manager OG by Don PELY"
+                Description="Native system monitor"
+                Target="[INSTALLDIR]TaskManagerOG.exe"
+                WorkingDirectory="INSTALLDIR" />
+      <RemoveFolder Id="CleanUpShortCut" Directory="ApplicationProgramsFolder" On="uninstall" />
+      <RegistryValue Root="HKCU"
+                     Key="Software\Don PELY\Task Manager OG"
+                     Name="installed"
+                     Type="integer"
+                     Value="1"
+                     KeyPath="yes" />
+    </Component>
+
+    <Feature Id="ProductFeature" Title="Task Manager OG by Don PELY" Level="1">
+      <ComponentGroupRef Id="AppFiles" />
+      <ComponentRef Id="ApplicationShortcut" />
+    </Feature>
+  </Product>
+</Wix>
