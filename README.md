@@ -1,14 +1,16 @@
 # Task Manager OG by Don PELY
 
+[![CI](https://github.com/yourbossdonpely/task-manager-og/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/yourbossdonpely/task-manager-og/actions/workflows/ci.yml)
+
 **A native, privacy-first task manager for Windows, macOS and Linux.**
 
 Task Manager OG by Don PELY is a ground-up, MIT-licensed re-envisioning of the classic
 Task Manager OG idea: one precise instrument that shows what the machine is doing, which
 process is responsible, and why it feels slow.
 
-> **Status: pre-alpha.** The application shell now builds on Windows; the measurement
-> providers and the first installable release are still in progress. Nothing here is
-> installable yet.
+> **Status: pre-alpha.** The application shell builds and passes CI on Windows, macOS and
+> Linux; the measurement providers and the first installable release are still in progress.
+> Nothing here is installable yet.
 
 ![Task Manager OG by Don PELY foundation shell](docs/preview-shell.png)
 
@@ -98,6 +100,16 @@ Windows, macOS and Linux; it is pinned to Qt 6.10.3 until the unattended Qt inst
 understands the 6.11+ repository layout. Packaging commands are added in the packaging
 milestone. Qt is used under the LGPLv3 and is dynamically linked; see
 [NOTICE](docs/NOTICE.md).
+
+## Command line
+
+A console companion is built beside the windowed application:
+
+```bash
+tmog-cli --version
+```
+
+The planned `--snapshot` and `--self-test` commands will use the same measurement core.
 
 ## Documentation
 

@@ -65,7 +65,19 @@ set_target_properties(TaskManagerOG PROPERTIES
     MACOSX_BUNDLE_SHORT_VERSION_STRING "${PROJECT_VERSION}"
 )
 
-install(TARGETS TaskManagerOG
+add_executable(tmog_cli
+    src/app/cli_main.cpp
+)
+target_link_libraries(tmog_cli PRIVATE tmog_core)
+set_target_properties(tmog_cli PROPERTIES OUTPUT_NAME "tmog-cli")
+
+if(MSVC)
+    target_compile_options(tmog_cli PRIVATE /W4 /permissive-)
+else()
+    target_compile_options(tmog_cli PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+
+install(TARGETS TaskManagerOG tmog_cli
     BUNDLE DESTINATION .
     RUNTIME DESTINATION bin
 )

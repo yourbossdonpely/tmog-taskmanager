@@ -45,15 +45,33 @@ void attachParentConsole()
 #endif
 }
 
+void writeOutput(const char *text)
+{
+#ifdef Q_OS_WIN
+    HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
+    if (handle == nullptr || handle == INVALID_HANDLE_VALUE) {
+        attachParentConsole();
+        handle = GetStdHandle(STD_OUTPUT_HANDLE);
+    }
+    if (handle != nullptr && handle != INVALID_HANDLE_VALUE) {
+        DWORD written = 0;
+        WriteFile(handle, text, static_cast<DWORD>(std::strlen(text)), &written, nullptr);
+        return;
+    }
+#endif
+    std::fputs(text, stdout);
+}
+
 void printUsage()
 {
-    std::printf("%s\n\n", qPrintable(tmog::productName()));
-    std::printf("Usage: TaskManagerOG [options]\n\n");
-    std::printf("Options:\n");
-    std::printf("  --version              Print the product name and version, then exit\n");
-    std::printf("  --smoke-gui            Build and render the window, then exit\n");
-    std::printf("  --screenshot <path>    Render the window to a PNG and exit\n");
-    std::printf("  --help                 Show this help\n");
+    const QByteArray product = tmog::productName().toLocal8Bit();
+    writeOutput(product.constData());
+    writeOutput("\n\nUsage: TaskManagerOG [options]\n\n");
+    writeOutput("Options:\n");
+    writeOutput("  --version              Print the product name and version, then exit\n");
+    writeOutput("  --smoke-gui            Build and render the window, then exit\n");
+    writeOutput("  --screenshot <path>    Render the window to a PNG and exit\n");
+    writeOutput("  --help                 Show this help\n");
 }
 
 } // namespace
@@ -63,7 +81,8 @@ int main(int argc, char **argv)
     if (hasArgument(argc, argv, "--version") || hasArgument(argc, argv, "--help")) {
         attachParentConsole();
         if (hasArgument(argc, argv, "--version")) {
-            std::printf("%s\n", qPrintable(tmog::versionLine()));
+            writeOutput(tmog::versionLine().toLocal8Bit().constData());
+            writeOutput("\n");
         } else {
             printUsage();
         }

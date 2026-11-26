@@ -58,12 +58,23 @@ jobs:
         shell: bash
         run: ctest --test-dir build -C Release --output-on-failure
 
-      - name: Product identity and GUI smoke
+      - name: Product identity
+        shell: bash
+        run: |
+          cli=$(find build -type f \( -name tmog-cli -o -name tmog-cli.exe \) | head -n 1)
+          test -n "$cli"
+          output=$("$cli" --version)
+          echo "$output"
+          case "$output" in
+            *"Task Manager OG by Don PELY"*) ;;
+            *) echo "unexpected product identity" >&2; exit 1 ;;
+          esac
+
+      - name: GUI smoke
         shell: bash
         env:
           QT_QPA_PLATFORM: offscreen
         run: |
           binary=$(find build -type f \( -name TaskManagerOG -o -name TaskManagerOG.exe \) | head -n 1)
           test -n "$binary"
-          "$binary" --version
           "$binary" --smoke-gui

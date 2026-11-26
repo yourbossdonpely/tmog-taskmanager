@@ -47,18 +47,20 @@ build artifacts or secrets committed.
 **Deliverable:** an app that launches on all three platforms, shows the branded shell, and
 persists settings.
 
-- [ ] `CMakeLists.txt` with C++20, warnings-as-errors in CI, version from one place.
-- [ ] `src/app/main.cpp`: `QApplication`, high-DPI policy, single-instance guard, CLI parser.
-- [ ] `src/ui/MainWindow`: left rail, destination stack, status bar, exact window title.
-- [ ] `src/ui/theme`: token model and Light/Dark/Green/Amber/Blue/Mono themes.
-- [ ] `src/core/settings`: versioned JSON, atomic save, portable mode detection.
-- [ ] Placeholder pages for all twelve destinations, each with a title and empty state.
-- [ ] Command palette shell (Ctrl/Cmd+K) and keyboard navigation.
-- [ ] Native application menu (About, Settings, Quit, Copy, Refresh, Help).
+- [x] `CMakeLists.txt` with C++20, warnings, and version from one place.
+- [x] `src/app/main.cpp`: `QApplication`, high-DPI defaults, CLI parser, smoke and screenshot modes.
+- [ ] Single-instance guard.
+- [x] `src/ui/MainWindow`: left rail, destination stack, status bar, exact window title.
+- [x] `src/ui/theme`: token model and Light/Dark/Green/Amber/Blue/Mono themes.
+- [x] `src/core/settings`: versioned JSON, atomic save, portable mode detection.
+- [x] Placeholder pages for all twelve destinations, each with a title and empty state.
+- [x] Command palette shell (Ctrl/Cmd+K) and keyboard navigation.
+- [x] Native application menu (About, Settings, Quit, Copy, Refresh, Help).
 - [ ] Local rotating log with redaction defaults.
-- [ ] `.github/workflows/ci.yml`: Windows/macOS/Ubuntu configure, build, test.
-- [ ] Unit tests for settings round-trip, theme token completeness, version formatting.
-- [ ] GUI smoke test using the offscreen platform.
+- [x] Console companion `tmog-cli` for version output on Windows.
+- [x] `.github/workflows/ci.yml`: Windows/macOS/Ubuntu configure, build, test — green on all three.
+- [x] Unit tests for settings round-trip, theme tokens and version identity.
+- [x] GUI smoke test using the offscreen platform.
 
 **Acceptance:** `cmake --build` succeeds on all three CI runners; the app opens to Summary;
 the window title is exactly `Task Manager OG by Don PELY`; theme and text scale survive a
