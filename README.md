@@ -190,6 +190,6 @@ the product name can be changed without changing the codebase.
 
 ## License
 
-[MIT](LICENSE) © 2026 Don Pely.
+[MIT](LICENSE) © 2026 Don PELY.
 
 Qt is a separate dependency under its own licence; see [NOTICE](docs/NOTICE.md).
