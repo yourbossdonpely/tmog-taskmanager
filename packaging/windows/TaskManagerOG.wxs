@@ -9,6 +9,7 @@
     <Package InstallerVersion="500"
              Compressed="yes"
              InstallScope="perMachine"
+             Platform="x64"
              Description="Task Manager OG by Don PELY" />
     <MajorUpgrade DowngradeErrorMessage="A newer version of Task Manager OG by Don PELY is already installed." />
     <MediaTemplate EmbedCab="yes" />

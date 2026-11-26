@@ -36,6 +36,9 @@ export PATH="$work:$qt/bin:$PATH"
     --icon-file "$root/packaging/linux/task-manager-og.svg" \
     --plugin qt
 
+cp "$root/packaging/linux/task-manager-og.png" "$appdir/task-manager-og.png"
+cp "$root/packaging/linux/task-manager-og.png" "$appdir/.DirIcon"
+
 appimage="$dist/TaskManagerOG-$version-linux-x86_64.AppImage"
 ARCH=x86_64 "$appimagetool" "$appdir" "$appimage"
 
@@ -44,10 +47,12 @@ mkdir -p "$pkgroot/opt/task-manager-og" \
     "$pkgroot/usr/bin" \
     "$pkgroot/usr/share/applications" \
     "$pkgroot/usr/share/icons/hicolor/scalable/apps" \
+    "$pkgroot/usr/share/icons/hicolor/256x256/apps" \
     "$pkgroot/usr/share/doc/task-manager-og"
 cp -a "$appdir/." "$pkgroot/opt/task-manager-og/"
 cp "$root/packaging/linux/task-manager-og.desktop" "$pkgroot/usr/share/applications/"
 cp "$root/packaging/linux/task-manager-og.svg" "$pkgroot/usr/share/icons/hicolor/scalable/apps/"
+cp "$root/packaging/linux/task-manager-og.png" "$pkgroot/usr/share/icons/hicolor/256x256/apps/"
 cp "$root/LICENSE" "$root/docs/NOTICE.md" "$pkgroot/usr/share/doc/task-manager-og/"
 cat > "$pkgroot/usr/bin/TaskManagerOG" <<'EOF'
 #!/bin/sh
@@ -70,6 +75,7 @@ Description: Task Manager OG by Don PELY
  Native, privacy-first system monitor for Windows, macOS and Linux.
 EOF
 dpkg-deb --build "$pkgroot" "$dist/TaskManagerOG-$version-linux-amd64.deb"
+rm -rf "$pkgroot/DEBIAN"
 
 mkdir -p "$work/rpmbuild/BUILD" "$work/rpmbuild/RPMS" "$work/rpmbuild/SOURCES" \
     "$work/rpmbuild/SPECS" "$work/rpmbuild/SRPMS"
@@ -94,9 +100,10 @@ cp -a "$pkgroot/." %{buildroot}/
 /usr/bin/TaskManagerOG
 /usr/share/applications/task-manager-og.desktop
 /usr/share/icons/hicolor/scalable/apps/task-manager-og.svg
+/usr/share/icons/hicolor/256x256/apps/task-manager-og.png
 /usr/share/doc/task-manager-og
 %changelog
-* Tue Nov 26 2026 Don PELY <noreply@donpely.com> - $version-1
+* Thu Nov 26 2026 Don PELY <noreply@donpely.com> - $version-1
 - Initial prerelease build.
 EOF
 rpmbuild -bb --define "_topdir $work/rpmbuild" \
